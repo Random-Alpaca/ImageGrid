@@ -67,8 +67,9 @@ pnpm build        # production build -> dist/
 
 ### Note on the install step
 
-pnpm 10+ refuses to run native build scripts (`esbuild`, `@tailwindcss/oxide`) on
-a fresh install and exits non-zero — which would fail the Vercel build. Those
-scripts aren't actually needed (pnpm installs the prebuilt platform binaries), so
-`vercel.json` sets `installCommand` to tolerate that exit code. Nothing else to
-configure.
+The native build scripts (`esbuild`, `@tailwindcss/oxide`) must be approved or
+pnpm exits non-zero on install and fails the Vercel build. They're approved in
+`pnpm-workspace.yaml` (`onlyBuiltDependencies`). pnpm **11.7.0 has a bug** where
+that approval is read but not applied, so the package manager is pinned to
+**`pnpm@10.18.0`** (`package.json#packageManager`), which honors it correctly.
+Nothing else to configure.
