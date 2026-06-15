@@ -1,4 +1,6 @@
 {
   "framework": "vite",
+  "installCommand": "pnpm install --no-frozen-lockfile || true",
+  "buildCommand": "node node_modules/vite/bin/vite.js build",
   "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
 }
