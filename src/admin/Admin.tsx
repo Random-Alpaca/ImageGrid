@@ -10,6 +10,7 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
+import { Analytics } from "@vercel/analytics/react";
 import { fetchPhotos, savePhotos, verifyPassphrase, type Photo } from "../photoStore";
 
 // Build the contents of src/photos.ts from the current list, as an offline
@@ -178,6 +179,7 @@ export default function Admin() {
             ← Back to portfolio
           </a>
         </div>
+        <Analytics />
       </main>
     );
   }
@@ -341,6 +343,7 @@ export default function Admin() {
           </pre>
         </section>
       </div>
+      <Analytics />
     </main>
   );
 }
