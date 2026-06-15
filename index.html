@@ -8,7 +8,30 @@
       <title>Jacky Xue</title>
       <meta name="description" content="Photography by Jacky Xue — an interactive image portfolio." />
       <style>html, body { height: 100%; margin: 0; } #root { height: 100%; }</style>
-      
+      <script>
+        (function () {
+          var ua = navigator.userAgent;
+          var os;
+          if (/iPhone|iPad|iPod|Macintosh/.test(ua) && !(/Windows/.test(ua))) {
+            os = "apple";
+          } else if (/Android/.test(ua)) {
+            os = "android";
+          } else if (/Windows/.test(ua)) {
+            os = "windows";
+          } else if (/Linux/.test(ua)) {
+            os = "linux";
+          }
+          if (os) {
+            document.documentElement.setAttribute("data-os", os);
+            if (os === "android") {
+              var link = document.createElement("link");
+              link.rel = "stylesheet";
+              link.href = "https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap";
+              document.head.appendChild(link);
+            }
+          }
+        })();
+      </script>
     </head>
 
     <body>
