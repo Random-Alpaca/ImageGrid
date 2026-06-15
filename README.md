@@ -1,4 +1,4 @@
-# Jacky Xue — Photo Portfolio
+# Infinite Tiling Photo Portfolio
 
 A Vite + React + Tailwind portfolio with an infinite drifting image grid. Links
 back to [jxue.ca](https://jxue.ca). Photos are managed through a passphrase-gated
@@ -44,32 +44,15 @@ never stored in the browser or shipped in the JS bundle. `GET /api/photos` is
 public (the gallery needs it); `PUT /api/photos` and `POST /api/verify` require
 the passphrase.
 
-> Note: this is a single shared passphrase — appropriate for a personal site, but
-> not full multi-user auth. Rotate it by changing `ADMIN_PASSWORD` and redeploying.
 
-## Develop
 
-```bash
-pnpm install
-pnpm dev          # frontend only — /api functions don't run here; the gallery
-                  # falls back to src/photos.ts and /admin can't unlock
-vercel dev        # full local stack incl. /api (needs Vercel CLI + the env vars
-                  # above in a local .env / `vercel env pull`)
-pnpm build        # production build -> dist/
-```
+## Deployment Steps
 
-## Deploy to Vercel
-
-1. Push this repo to GitHub.
+1. Fork this repo.
 2. In Vercel, **New Project → Import** the repo (Vercel auto-detects Vite and
    builds the `api/` functions).
 3. Complete **Backend setup** above, then redeploy.
 
-### Note on the install step
+## Questions?
 
-The native build scripts (`esbuild`, `@tailwindcss/oxide`) must be approved or
-pnpm exits non-zero on install and fails the Vercel build. They're approved in
-`pnpm-workspace.yaml` (`onlyBuiltDependencies`). pnpm **11.7.0 has a bug** where
-that approval is read but not applied, so the package manager is pinned to
-**`pnpm@10.18.0`** (`package.json#packageManager`), which honors it correctly.
-Nothing else to configure.
+Please direct them to [Claude](https://claude.ai).
