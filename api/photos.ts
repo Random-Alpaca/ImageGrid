@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { checkAuth, envStatus, getRedis, isValidList, PHOTOS_KEY, type Photo } from "./_lib";
+import { checkAuth, envStatus, getRedis, isValidList, PHOTOS_KEY, type Photo } from "./_lib.js";
 
 function safeParse(value: string): unknown {
   try {
