@@ -64,4 +64,11 @@ pnpm build        # production build -> dist/
 2. In Vercel, **New Project → Import** the repo (Vercel auto-detects Vite and
    builds the `api/` functions).
 3. Complete **Backend setup** above, then redeploy.
-# ImageGrid
+
+### Note on the install step
+
+pnpm 10+ refuses to run native build scripts (`esbuild`, `@tailwindcss/oxide`) on
+a fresh install and exits non-zero — which would fail the Vercel build. Those
+scripts aren't actually needed (pnpm installs the prebuilt platform binaries), so
+`vercel.json` sets `installCommand` to tolerate that exit code. Nothing else to
+configure.

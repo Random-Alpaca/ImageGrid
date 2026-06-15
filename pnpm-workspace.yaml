@@ -3,6 +3,10 @@ packages:
 allowBuilds:
   '@tailwindcss/oxide': set this to true or false
   esbuild: set this to true or false
+# pnpm 10+ blocks these native build scripts on a fresh install; the prebuilt
+# platform binaries still work, so the Vercel installCommand tolerates the gate.
 onlyBuiltDependencies:
   - '@tailwindcss/oxide'
   - esbuild
+overrides:
+  vite: 6.3.5
