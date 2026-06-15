@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { fetchPhotos, staticPhotos, type Photo } from "../photoStore";
 
 // Varied tile footprints so the grid never reads as a uniform sheet.
@@ -209,6 +210,7 @@ export default function App() {
       </AnimatePresence>
 
       <style>{`@keyframes drift { from { transform: translateY(0); } to { transform: translateY(-50%); } }`}</style>
+      <SpeedInsights />
     </main>
   );
 }
