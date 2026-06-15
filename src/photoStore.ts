@@ -49,14 +49,15 @@ export async function savePhotos(
       },
       body: JSON.stringify({ photos: list }),
     });
-    let data: { ok?: boolean; error?: string } = {};
+    let data: { ok?: boolean; error?: string; detail?: string } = {};
     try {
       data = await res.json();
     } catch {
       return { ok: false, error: "Unexpected response — is the backend deployed?" };
     }
     if (res.ok && data.ok) return { ok: true };
-    return { ok: false, error: data.error || `Save failed (${res.status}).` };
+    const base = data.error || `Save failed (${res.status}).`;
+    return { ok: false, error: data.detail ? `${base} (${data.detail})` : base };
   } catch {
     return { ok: false, error: "Network error while saving." };
   }

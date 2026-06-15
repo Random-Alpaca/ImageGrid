@@ -13,6 +13,17 @@ export function getRedis(): Redis | null {
   return new Redis({ url, token });
 }
 
+// Non-secret report of which connection env vars are present, for diagnostics.
+export function envStatus() {
+  return {
+    KV_REST_API_URL: Boolean(process.env.KV_REST_API_URL),
+    KV_REST_API_TOKEN: Boolean(process.env.KV_REST_API_TOKEN),
+    UPSTASH_REDIS_REST_URL: Boolean(process.env.UPSTASH_REDIS_REST_URL),
+    UPSTASH_REDIS_REST_TOKEN: Boolean(process.env.UPSTASH_REDIS_REST_TOKEN),
+    ADMIN_PASSWORD: Boolean(process.env.ADMIN_PASSWORD),
+  };
+}
+
 function bearer(req: { headers: Record<string, unknown> }): string {
   const raw = (req.headers.authorization || req.headers.Authorization || "") as string;
   return raw.startsWith("Bearer ") ? raw.slice(7) : "";

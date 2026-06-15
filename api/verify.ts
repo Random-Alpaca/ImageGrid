@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { checkAuth } from "./_lib";
+import { checkAuth } from "./_lib.js";
 
 // POST /api/verify with Authorization: Bearer <passphrase> -> { ok: true }
 // Lets the admin page confirm the passphrase before showing the editor.
