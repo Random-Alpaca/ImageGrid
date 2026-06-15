@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 import { fetchPhotos, staticPhotos, type Photo } from "../photoStore";
 
 // Varied tile footprints so the grid never reads as a uniform sheet.
@@ -98,7 +99,7 @@ export default function App() {
     <main className="h-screen overflow-hidden bg-black text-foreground selection:bg-primary selection:text-primary-foreground">
 
       <nav className="fixed left-1/2 top-5 z-30 flex w-[calc(100%-2rem)] max-w-4xl -translate-x-1/2 items-center justify-between rounded-full border border-[rgba(255,255,255,0.15)] bg-[rgba(9,9,11,0.55)] px-4 py-3 text-white shadow-2xl shadow-[rgba(0,0,0,0.25)] backdrop-blur-2xl md:px-6">
-        <div className="flex items-center gap-3"><span className="text-xl tracking-tight">Jacky Xue</span></div>
+        <div className="flex items-center gap-3"><span className="text-xl">Jacky Xue</span></div>
         <a href="https://jxue.ca" className="flex items-center gap-2 rounded-full bg-[#efe2c6] px-4 py-2 text-sm text-[#17130f] transition hover:scale-105">jxue.ca</a>
       </nav>
 
@@ -126,7 +127,7 @@ export default function App() {
                     animate={{ scale: isExpanded ? 1.06 : 1 }}
                     transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
                     style={{ transformOrigin: isExpanded ? origin : "center center", zIndex: isExpanded ? 20 : 1 }}
-                    className={`${work.span} group/card relative min-h-0 overflow-hidden rounded-[1.15rem] bg-muted text-left shadow-sm transition-[border-radius,box-shadow] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:rounded-[1.6rem] hover:shadow-2xl hover:shadow-[rgba(0,0,0,0.45)] focus:outline-none focus:ring-2 focus:ring-primary`}
+                    className={`${work.span} group/card relative min-h-0 overflow-hidden rounded-[1.15rem] bg-black text-left shadow-sm transition-[border-radius,box-shadow] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:rounded-[1.6rem] hover:shadow-2xl hover:shadow-[rgba(0,0,0,0.45)] focus:outline-none focus:ring-2 focus:ring-primary`}
                   >
                     <motion.img
                       layoutId={`portfolio-image-${work.id}`}
@@ -199,7 +200,7 @@ export default function App() {
                   exit={{ opacity: 0, x: 10, transition: { duration: 0.22, ease: [0.2, 0.8, 0.2, 1] } }}
                 >
               <button onClick={closeModal} className="mb-8 ml-auto grid size-10 place-items-center rounded-full bg-[rgba(255,255,255,0.10)] transition hover:bg-[rgba(255,255,255,0.20)]"><X className="size-5" /></button>
-              <h3 className="font-serif text-5xl leading-[0.9] tracking-[-0.04em]">{selected.title}</h3>
+              <h3 className="font-serif text-5xl leading-[0.9]">{selected.title}</h3>
               <p className="mt-6 leading-7 text-[rgba(255,255,255,0.70)]">{selected.caption}</p>
                 </motion.div>
               )}
@@ -211,6 +212,7 @@ export default function App() {
 
       <style>{`@keyframes drift { from { transform: translateY(0); } to { transform: translateY(-50%); } }`}</style>
       <SpeedInsights />
+      <Analytics />
     </main>
   );
 }
