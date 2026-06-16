@@ -27,25 +27,25 @@
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
-  --background: #efe2c6;
-  --foreground: #211813;
-  --card: #f6ead2;
-  --card-foreground: #211813;
-  --popover: #17130f;
-  --popover-foreground: #fff7e8;
-  --primary: #b5522c;
-  --primary-foreground: #fff7e8;
-  --secondary: #dcc7a4;
-  --secondary-foreground: #241914;
-  --muted: #cbb895;
-  --muted-foreground: #6b5b4a;
+  --background: #FFFBFE;
+  --foreground: #1c1b1f;
+  --card: #FFFBFE;
+  --card-foreground: #1c1b1f;
+  --popover: #1c1b1f;
+  --popover-foreground: #FFFBFE;
+  --primary: #186440;
+  --primary-foreground: #FFFBFE;
+  --secondary: #e8e0ec;
+  --secondary-foreground: #1c1b1f;
+  --muted: #e8e0ec;
+  --muted-foreground: #49454f;
   --accent: #186440;
-  --accent-foreground: #fff3dd;
+  --accent-foreground: #FFFBFE;
   --destructive: #d4183d;
   --destructive-foreground: #ffffff;
-  --border: rgba(44, 31, 22, 0.18);
+  --border: rgba(28, 27, 31, 0.14);
   --input: transparent;
-  --input-background: #eadabf;
+  --input-background: #f4eff4;
   --switch-background: #9a8467;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
@@ -66,15 +66,15 @@
   --sidebar-ring: #a3a3a3;
 
   /* Glass component tokens — light mode */
-  --glass-fill: rgba(239, 226, 198, 0.55);
-  --glass-border-color: rgba(44, 31, 22, 0.16);
-  --glass-text: #211813;
-  --glass-text-muted: rgba(33, 24, 19, 0.60);
-  --glass-inset-hi: rgba(255, 255, 255, 0.70);
-  --glass-inset-lo: rgba(0, 0, 0, 0.05);
-  --glass-shadow: rgba(0, 0, 0, 0.15);
-  --nav-conic-hi: rgba(44, 31, 22, 0.55);
-  --nav-conic-lo: rgba(44, 31, 22, 0.04);
+  --glass-fill: rgba(255, 251, 254, 0.55);
+  --glass-border-color: rgba(28, 27, 31, 0.14);
+  --glass-text: #1c1b1f;
+  --glass-text-muted: rgba(28, 27, 31, 0.58);
+  --glass-inset-hi: rgba(255, 255, 255, 0.80);
+  --glass-inset-lo: rgba(0, 0, 0, 0.04);
+  --glass-shadow: rgba(0, 0, 0, 0.12);
+  --nav-conic-hi: rgba(28, 27, 31, 0.45);
+  --nav-conic-lo: rgba(28, 27, 31, 0.03);
 }
 
 @media (prefers-color-scheme: dark) {
