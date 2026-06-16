@@ -105,7 +105,7 @@ export default function App() {
           <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,255,255,0.22) 0%, transparent 70%)" }} />
           {/* Bottom vignette — shadow inside the dome */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.12))" }} />
-          <div className="relative flex items-center gap-3"><span className="text-xl">Jacky Xue</span></div>
+          <div className="relative flex items-center gap-3"><span className="text-xl font-medium" style={{ textShadow: "0 1px 12px rgba(0,0,0,0.7), 0 0 40px rgba(0,0,0,0.4)" }}>Jacky Xue</span></div>
           <a href="https://jxue.ca" className="relative flex items-center gap-2 rounded-full bg-[#efe2c6] px-4 py-2 text-sm text-[#17130f] transition hover:scale-105">jxue.ca</a>
         </nav>
         {/* Lifted shadow — blurred copy below for the floating 3-D look */}
@@ -255,9 +255,9 @@ export default function App() {
           position: relative;
           overflow: hidden;
           border-radius: 9999px;
-          background: rgba(255,255,255,0.07);
-          backdrop-filter: blur(40px) saturate(200%) brightness(1.15);
-          -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.15);
+          background: rgba(255,255,255,0.04);
+          backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
+          -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
           box-shadow:
             inset 0  1px 0 rgba(255,255,255,0.35),
             inset 0 -1px 0 rgba(0,0,0,0.18),
