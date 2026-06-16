@@ -198,8 +198,8 @@ export default function App() {
   return (
     <main className="h-screen overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
 
-      {/* Outer wrapper — owns fixed positioning and the spinning conic gradient border */}
-      <div className="nav-wrap" style={{ animationPlayState: (isPaused || view === "list") ? "paused" : "running" }}>
+      {/* Outer wrapper — owns fixed positioning and the static border */}
+      <div className="nav-wrap">
         <nav className="nav-glass flex items-center justify-between px-4 py-3 text-white md:px-6">
           {/* Dome highlight — convex lens catching light from above */}
           <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,255,255,0.22) 0%, transparent 70%)" }} />
@@ -368,13 +368,6 @@ export default function App() {
       <style>{`
         @keyframes drift { from { transform: translateY(0); } to { transform: translateY(-50%); } }
 
-        @property --nav-angle {
-          syntax: "<angle>";
-          inherits: false;
-          initial-value: -75deg;
-        }
-        @keyframes nav-spin { to { --nav-angle: 285deg; } }
-
         .nav-wrap {
           position: fixed;
           left: 50%;
@@ -383,18 +376,9 @@ export default function App() {
           z-index: 30;
           width: calc(100% - 2rem);
           max-width: 56rem;
-          padding: 1.5px;
+          padding: 1px;
           border-radius: 9999px;
-          background: conic-gradient(
-            from var(--nav-angle),
-            var(--nav-conic-lo)  0%,
-            var(--nav-conic-hi) 12%,
-            var(--nav-conic-lo) 26%,
-            var(--nav-conic-lo) 68%,
-            var(--nav-conic-hi) 82%,
-            var(--nav-conic-lo) 100%
-          );
-          animation: nav-spin 8s linear infinite;
+          background: var(--glass-border-color);
         }
 
         .nav-glass {
