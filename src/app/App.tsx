@@ -199,7 +199,7 @@ export default function App() {
     <main className="h-screen overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
 
       {/* Outer wrapper — owns fixed positioning and the spinning conic gradient border */}
-      <div className="nav-wrap" style={{ animationPlayState: isPaused ? "paused" : "running" }}>
+      <div className="nav-wrap" style={{ animationPlayState: (isPaused || view === "list") ? "paused" : "running" }}>
         <nav className="nav-glass flex items-center justify-between px-4 py-3 text-white md:px-6">
           {/* Dome highlight — convex lens catching light from above */}
           <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,255,255,0.22) 0%, transparent 70%)" }} />
