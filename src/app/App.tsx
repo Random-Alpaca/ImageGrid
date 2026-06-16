@@ -98,10 +98,19 @@ export default function App() {
   return (
     <main className="h-screen overflow-hidden bg-black text-foreground selection:bg-primary selection:text-primary-foreground">
 
-      <nav className="fixed left-1/2 top-5 z-30 flex w-[calc(100%-2rem)] max-w-4xl -translate-x-1/2 items-center justify-between rounded-full border border-[rgba(255,255,255,0.15)] bg-[rgba(9,9,11,0.55)] px-4 py-3 text-white shadow-2xl shadow-[rgba(0,0,0,0.25)] backdrop-blur-2xl md:px-6">
-        <div className="flex items-center gap-3"><span className="text-xl">Jacky Xue</span></div>
-        <a href="https://jxue.ca" className="flex items-center gap-2 rounded-full bg-[#efe2c6] px-4 py-2 text-sm text-[#17130f] transition hover:scale-105">jxue.ca</a>
-      </nav>
+      {/* Outer wrapper — owns fixed positioning and the spinning conic gradient border */}
+      <div className="nav-wrap">
+        <nav className="nav-glass flex items-center justify-between px-4 py-3 text-white md:px-6">
+          {/* Dome highlight — convex lens catching light from above */}
+          <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,255,255,0.22) 0%, transparent 70%)" }} />
+          {/* Bottom vignette — shadow inside the dome */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.12))" }} />
+          <div className="relative flex items-center gap-3"><span className="text-xl">Jacky Xue</span></div>
+          <a href="https://jxue.ca" className="relative flex items-center gap-2 rounded-full bg-[#efe2c6] px-4 py-2 text-sm text-[#17130f] transition hover:scale-105">jxue.ca</a>
+        </nav>
+        {/* Lifted shadow — blurred copy below for the floating 3-D look */}
+        <div className="nav-shadow" />
+      </div>
 
       <section className="relative z-10 mx-auto flex h-screen w-full max-w-[1800px] flex-col">
         <div className="relative flex-1 overflow-hidden">
@@ -210,7 +219,62 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <style>{`@keyframes drift { from { transform: translateY(0); } to { transform: translateY(-50%); } }`}</style>
+      <style>{`
+        @keyframes drift { from { transform: translateY(0); } to { transform: translateY(-50%); } }
+
+        @property --nav-angle {
+          syntax: "<angle>";
+          inherits: false;
+          initial-value: -75deg;
+        }
+        @keyframes nav-spin { to { --nav-angle: 285deg; } }
+
+        .nav-wrap {
+          position: fixed;
+          left: 50%;
+          top: 1.25rem;
+          transform: translateX(-50%);
+          z-index: 30;
+          width: calc(100% - 2rem);
+          max-width: 56rem;
+          padding: 1.5px;
+          border-radius: 9999px;
+          background: conic-gradient(
+            from var(--nav-angle),
+            rgba(255,255,255,0.03) 0%,
+            rgba(255,255,255,0.7)  12%,
+            rgba(255,255,255,0.03) 26%,
+            rgba(255,255,255,0.03) 68%,
+            rgba(255,255,255,0.5)  82%,
+            rgba(255,255,255,0.03) 100%
+          );
+          animation: nav-spin 8s linear infinite;
+        }
+
+        .nav-glass {
+          position: relative;
+          overflow: hidden;
+          border-radius: 9999px;
+          background: rgba(255,255,255,0.07);
+          backdrop-filter: blur(40px) saturate(200%) brightness(1.15);
+          -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.15);
+          box-shadow:
+            inset 0  1px 0 rgba(255,255,255,0.35),
+            inset 0 -1px 0 rgba(0,0,0,0.18),
+            0 8px 48px rgba(0,0,0,0.45);
+        }
+
+        .nav-shadow {
+          position: absolute;
+          inset: 6px;
+          border-radius: 9999px;
+          background: rgba(0,0,0,0.55);
+          filter: blur(20px);
+          transform: translateY(14px) scaleX(0.94);
+          z-index: -1;
+          pointer-events: none;
+        }
+      `}</style>
       <SpeedInsights />
       <Analytics />
     </main>
