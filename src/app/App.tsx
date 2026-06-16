@@ -207,7 +207,7 @@ export default function App() {
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.12))" }} />
           <div className="relative flex items-center gap-3"><span className="text-xl font-medium" style={{ color: "var(--glass-text)", textShadow: "0 1px 8px var(--glass-shadow), 0 0 30px var(--glass-shadow)" }}>Jacky Xue</span></div>
           <div className="relative flex items-center gap-2">
-            <button onClick={toggleView} className="nav-button flex items-center justify-center rounded-full p-2 transition" style={{ color: "var(--glass-text)" }} aria-label="Toggle view">
+            <button onClick={toggleView} className="nav-button-neutral flex items-center justify-center rounded-full p-2 transition" style={{ color: "var(--glass-text)" }} aria-label="Toggle view">
               {view === "grid" ? <LayoutGrid className="size-4" /> : <LayoutList className="size-4" />}
             </button>
             <a href="https://jxue.ca" className="nav-button flex items-center gap-2 rounded-full px-4 py-2 text-sm transition" style={{ color: "var(--glass-text)" }}>Home</a>
@@ -271,23 +271,16 @@ export default function App() {
             </div>
           </motion.section>
         ) : (
-          <motion.section
+          <section
             key="list"
             className="relative z-10 h-screen overflow-y-auto bg-background"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
           >
             <div className="mx-auto max-w-3xl space-y-3 px-4 pb-12 pt-28 md:px-8">
-              {listPool.map((item, i) => (
-                <motion.button
+              {listPool.map((item) => (
+                <button
                   key={item.id}
                   onClick={() => openModal(item)}
                   className="w-full text-left"
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: Math.min(i * 0.04, 0.3), ease: [0.2, 0.8, 0.2, 1] }}
                 >
                   <div className="flex items-stretch gap-4 rounded-[1.6rem] p-2 transition-colors hover:bg-white/[0.03]">
                     {/* Thumbnail */}
@@ -306,10 +299,10 @@ export default function App() {
                       <p className="mt-2 text-sm leading-6" style={{ color: "var(--glass-text-muted)" }}>{item.caption}</p>
                     </div>
                   </div>
-                </motion.button>
+                </button>
               ))}
             </div>
-          </motion.section>
+          </section>
         )}
       </AnimatePresence>
 
@@ -361,7 +354,7 @@ export default function App() {
                     exit={{ opacity: 0, x: 18, scale: 0.97, transition: { duration: 0.24, ease: [0.2, 0.8, 0.2, 1] } }}
                     onClick={(event) => event.stopPropagation()}
                   >
-                    <button onClick={closeModal} className="mb-7 ml-auto grid size-10 place-items-center rounded-full bg-[#186440]/20 transition hover:bg-[#186440]/30"><X className="size-5" /></button>
+                    <button onClick={closeModal} className="mb-7 ml-auto grid size-10 place-items-center rounded-full bg-white/10 transition hover:bg-white/20"><X className="size-5" /></button>
                     <h3 className="text-5xl font-medium leading-[0.95] tracking-[-0.02em]" style={{ textShadow: "0 1px 12px rgba(0,0,0,0.6)" }}>{selected.title}</h3>
                     <p className="mt-6 leading-7 text-white/75">{selected.caption}</p>
                   </motion.aside>
@@ -431,6 +424,22 @@ export default function App() {
         .nav-button:hover {
           background: linear-gradient(135deg, rgba(24,100,64,0.25), rgba(24,100,64,0.15));
           border-color: rgba(24,100,64,0.5);
+        }
+
+        /* Nav button neutral — glass effect without green tint */
+        .nav-button-neutral {
+          background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+          backdrop-filter: blur(20px) saturate(160%);
+          -webkit-backdrop-filter: blur(20px) saturate(160%);
+          border: 1px solid var(--glass-border-color);
+          box-shadow:
+            inset 0  1px 0 var(--glass-inset-hi),
+            inset 0 -1px 0 var(--glass-inset-lo),
+            0 4px 16px var(--glass-shadow);
+        }
+        .nav-button-neutral:hover {
+          background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
+          border-color: var(--glass-inset-hi);
         }
 
         /* Caption / list pane — glass adapts to light and dark */
