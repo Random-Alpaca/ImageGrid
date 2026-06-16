@@ -11,10 +11,12 @@ const SEED = 0x9e3779b9; // fixed → layout is deterministic and stable across 
 // Varied tile footprints, weighted so big tiles stay a minority and grid-flow-dense
 // still backfills cleanly. Picked at random (seeded) so the size rhythm never repeats.
 const SPAN_WEIGHTS = [
-  { span: "col-span-1 row-span-1", w: 50 },
-  { span: "col-span-1 row-span-2", w: 18 },
-  { span: "col-span-2 row-span-1", w: 16 },
-  { span: "col-span-2 row-span-2", w: 16 },
+  { span: "col-span-1 row-span-1", w: 44 },
+  { span: "col-span-1 row-span-2", w: 16 },
+  { span: "col-span-2 row-span-1", w: 14 },
+  { span: "col-span-2 row-span-2", w: 14 },
+  { span: "col-span-3 row-span-2", w: 7 },
+  { span: "col-span-2 row-span-3", w: 5 },
 ];
 const SPAN_TOTAL = SPAN_WEIGHTS.reduce((sum, s) => sum + s.w, 0);
 
