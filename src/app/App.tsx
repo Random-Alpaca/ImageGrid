@@ -61,6 +61,10 @@ export default function App() {
   const [hovered, setHovered] = useState<string | null>(null);
   const [origin, setOrigin] = useState("center center");
 
+  // The grid drift and the nav's spinning glass border both pause together so
+  // the glass freezes in sync with the photos it's refracting.
+  const isPaused = hovered !== null || selected !== null;
+
   // Compute a transform-origin from the tile's position inside the grid so the
   // subtle scale-up always reads as growing *inward* near the edges.
   const openModal = (work: PortfolioWork) => {
@@ -99,7 +103,7 @@ export default function App() {
     <main className="h-screen overflow-hidden bg-black text-foreground selection:bg-primary selection:text-primary-foreground">
 
       {/* Outer wrapper — owns fixed positioning and the spinning conic gradient border */}
-      <div className="nav-wrap">
+      <div className="nav-wrap" style={{ animationPlayState: isPaused ? "paused" : "running" }}>
         <nav className="nav-glass flex items-center justify-between px-4 py-3 text-white md:px-6">
           {/* Dome highlight — convex lens catching light from above */}
           <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,255,255,0.22) 0%, transparent 70%)" }} />
@@ -114,11 +118,11 @@ export default function App() {
 
       <section className="relative z-10 mx-auto flex h-screen w-full max-w-[1800px] flex-col">
         <div className="relative flex-1 overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-28 bg-gradient-to-b from-black to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-14 bg-gradient-to-b from-black to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28 bg-gradient-to-t from-black to-transparent" />
           <div
             className="animate-[drift_120s_linear_infinite] px-4 md:px-8"
-            style={{ willChange: "transform", transform: "translateZ(0)", animationPlayState: hovered || selected ? "paused" : "running" }}
+            style={{ willChange: "transform", transform: "translateZ(0)", animationPlayState: isPaused ? "paused" : "running" }}
           >
             <div data-grid className="grid grid-flow-dense auto-rows-[122px] grid-cols-3 gap-3 pt-4 md:auto-rows-[150px] md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
               {imagePool.map((work) => {
@@ -138,14 +142,11 @@ export default function App() {
                     style={{ transformOrigin: isExpanded ? origin : "center center", zIndex: isExpanded ? 20 : 1 }}
                     className={`${work.span} group/card relative min-h-0 overflow-hidden rounded-[1.15rem] bg-black text-left shadow-sm transition-[border-radius,box-shadow] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:rounded-[1.6rem] hover:shadow-2xl hover:shadow-[rgba(0,0,0,0.45)] focus:outline-none focus:ring-2 focus:ring-primary`}
                   >
-                    {/* Blurred fill — same image scaled up so no black bars show */}
-                    <img src={work.src} alt="" aria-hidden className="absolute inset-0 size-full scale-110 object-cover blur-xl opacity-70" />
                     <motion.img
                       layoutId={`portfolio-image-${work.id}`}
                       src={work.src}
                       alt={work.alt}
-                      className="absolute inset-0 size-full object-contain"
-                      style={{ zIndex: 1 }}
+                      className="size-full object-cover"
                       transition={modalTransition}
                     />
                     <div
@@ -170,56 +171,50 @@ export default function App() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
           >
-            <motion.article
-              className="relative grid h-[84vh] w-full max-w-5xl overflow-hidden rounded-[2rem] text-white md:h-[78vh] md:grid-cols-[1.25fr_0.75fr]"
+            <div
+              className="flex h-[88vh] w-full max-w-6xl flex-col items-center justify-center gap-4 md:grid md:grid-cols-[minmax(0,1fr)_390px] md:gap-8"
               onClick={(event) => event.stopPropagation()}
             >
-              <AnimatePresence>
-                {!isClosing && (
-                  <motion.div
-                    className="pointer-events-none absolute inset-0 rounded-[2rem] border border-[rgba(255,255,255,0.20)] bg-[rgba(23,19,15,0.90)] shadow-2xl"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1, transition: { ...chromeTransition, delay: 0.82 } }}
-                    exit={{ opacity: 0, transition: { duration: 0.22, ease: [0.2, 0.8, 0.2, 1] } }}
-                  />
-                )}
-              </AnimatePresence>
-            <div className="relative z-10 h-full min-h-0 overflow-hidden bg-black md:h-full">
-              <img src={selected.src} alt="" aria-hidden className="absolute inset-0 size-full scale-110 object-cover blur-2xl opacity-60" />
-              <motion.img
-                layoutId={`portfolio-image-${selected.id}`}
-                src={selected.src}
-                alt={selected.alt}
-                className="absolute inset-0 size-full object-contain"
-                style={{ zIndex: 1 }}
+              {/* Figure hugs the photo's native proportions — no bars, no blurred fill */}
+              <motion.figure
+                className="relative max-h-[58vh] max-w-full overflow-hidden rounded-[1.8rem] bg-black shadow-2xl shadow-black/70 md:ml-auto md:max-h-[84vh] md:max-w-full"
+                layout
                 transition={modalTransition}
-              />
+              >
+                <motion.img
+                  layoutId={`portfolio-image-${selected.id}`}
+                  src={selected.src}
+                  alt={selected.alt}
+                  className="block max-h-[58vh] w-auto max-w-full object-contain md:max-h-[84vh]"
+                  transition={modalTransition}
+                />
+                <AnimatePresence>
+                  {!isClosing && (
+                    <motion.div
+                      className="pointer-events-none absolute inset-0 rounded-[1.8rem] ring-1 ring-white/15"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1, transition: { ...chromeTransition, delay: 0.82 } }}
+                      exit={{ opacity: 0, transition: { duration: 0.2, ease: [0.2, 0.8, 0.2, 1] } }}
+                    />
+                  )}
+                </AnimatePresence>
+              </motion.figure>
+
               <AnimatePresence>
                 {!isClosing && (
-                  <motion.div
-                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1, transition: { ...chromeTransition, delay: 0.9 } }}
-                    exit={{ opacity: 0, transition: { duration: 0.2, ease: [0.2, 0.8, 0.2, 1] } }}
-                  />
+                  <motion.aside
+                    className="glass-pane w-full max-w-[390px] p-6 text-white md:relative md:w-[390px] md:p-7"
+                    initial={{ opacity: 0, x: 28, scale: 0.96 }}
+                    animate={{ opacity: 1, x: 0, scale: 1, transition: { ...chromeTransition, delay: 0.92 } }}
+                    exit={{ opacity: 0, x: 18, scale: 0.97, transition: { duration: 0.24, ease: [0.2, 0.8, 0.2, 1] } }}
+                  >
+                    <button onClick={closeModal} className="mb-7 ml-auto grid size-10 place-items-center rounded-full bg-white/10 transition hover:bg-white/20"><X className="size-5" /></button>
+                    <h3 className="text-5xl font-medium leading-[0.95] tracking-[-0.02em]" style={{ textShadow: "0 1px 12px rgba(0,0,0,0.6)" }}>{selected.title}</h3>
+                    <p className="mt-6 leading-7 text-white/75">{selected.caption}</p>
+                  </motion.aside>
                 )}
               </AnimatePresence>
             </div>
-            <AnimatePresence>
-              {!isClosing && (
-                <motion.div
-                  className="relative z-10 flex flex-col p-7 md:p-9"
-                  initial={{ opacity: 0, x: 18 }}
-                  animate={{ opacity: 1, x: 0, transition: { ...chromeTransition, delay: 0.9 } }}
-                  exit={{ opacity: 0, x: 10, transition: { duration: 0.22, ease: [0.2, 0.8, 0.2, 1] } }}
-                >
-              <button onClick={closeModal} className="mb-8 ml-auto grid size-10 place-items-center rounded-full bg-[rgba(255,255,255,0.10)] transition hover:bg-[rgba(255,255,255,0.20)]"><X className="size-5" /></button>
-              <h3 className="font-serif text-5xl leading-[0.9]">{selected.title}</h3>
-              <p className="mt-6 leading-7 text-[rgba(255,255,255,0.70)]">{selected.caption}</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            </motion.article>
           </motion.div>
         )}
       </AnimatePresence>
@@ -260,6 +255,20 @@ export default function App() {
           position: relative;
           overflow: hidden;
           border-radius: 9999px;
+          background: rgba(255,255,255,0.04);
+          backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
+          -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
+          box-shadow:
+            inset 0  1px 0 rgba(255,255,255,0.35),
+            inset 0 -1px 0 rgba(0,0,0,0.18),
+            0 8px 48px rgba(0,0,0,0.45);
+        }
+
+        /* Caption pane — same glass recipe as the nav bar */
+        .glass-pane {
+          position: relative;
+          border-radius: 1.7rem;
+          border: 1px solid rgba(255,255,255,0.18);
           background: rgba(255,255,255,0.04);
           backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
           -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
