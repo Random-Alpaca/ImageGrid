@@ -128,12 +128,12 @@ export default function App() {
           <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,255,255,0.22) 0%, transparent 70%)" }} />
           {/* Bottom vignette — shadow inside the dome */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.12))" }} />
-          <div className="relative flex items-center gap-3"><span className="text-xl font-medium" style={{ textShadow: "0 1px 12px rgba(0,0,0,0.7), 0 0 40px rgba(0,0,0,0.4)" }}>Jacky Xue</span></div>
+          <div className="relative flex items-center gap-3"><span className="text-xl font-medium" style={{ color: "var(--glass-text)", textShadow: "0 1px 8px var(--glass-shadow), 0 0 30px var(--glass-shadow)" }}>Jacky Xue</span></div>
           <div className="relative flex items-center gap-2">
-            <button onClick={toggleView} className="nav-button flex items-center justify-center rounded-full p-2 text-white transition" aria-label="Toggle view">
+            <button onClick={toggleView} className="nav-button flex items-center justify-center rounded-full p-2 transition" style={{ color: "var(--glass-text)" }} aria-label="Toggle view">
               {view === "grid" ? <LayoutGrid className="size-4" /> : <LayoutList className="size-4" />}
             </button>
-            <a href="https://jxue.ca" className="nav-button flex items-center gap-2 rounded-full px-4 py-2 text-sm text-white transition">Home</a>
+            <a href="https://jxue.ca" className="nav-button flex items-center gap-2 rounded-full px-4 py-2 text-sm transition" style={{ color: "var(--glass-text)" }}>Home</a>
           </div>
         </nav>
         {/* Lifted shadow — blurred copy below for the floating 3-D look */}
@@ -196,7 +196,7 @@ export default function App() {
         ) : (
           <motion.section
             key="list"
-            className="relative z-10 h-screen overflow-y-auto"
+            className="relative z-10 h-screen overflow-y-auto bg-background"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -225,8 +225,8 @@ export default function App() {
                     </div>
                     {/* Info pane */}
                     <div className="glass-pane flex flex-1 flex-col justify-center p-5 md:p-6">
-                      <h3 className="text-2xl font-medium leading-tight tracking-[-0.02em] text-white" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>{item.title}</h3>
-                      <p className="mt-2 text-sm leading-6 text-white/65">{item.caption}</p>
+                      <h3 className="text-2xl font-medium leading-tight tracking-[-0.02em]" style={{ color: "var(--glass-text)" }}>{item.title}</h3>
+                      <p className="mt-2 text-sm leading-6" style={{ color: "var(--glass-text-muted)" }}>{item.caption}</p>
                     </div>
                   </div>
                 </motion.button>
@@ -317,12 +317,12 @@ export default function App() {
           border-radius: 9999px;
           background: conic-gradient(
             from var(--nav-angle),
-            rgba(255,255,255,0.03) 0%,
-            rgba(255,255,255,0.7)  12%,
-            rgba(255,255,255,0.03) 26%,
-            rgba(255,255,255,0.03) 68%,
-            rgba(255,255,255,0.5)  82%,
-            rgba(255,255,255,0.03) 100%
+            var(--nav-conic-lo)  0%,
+            var(--nav-conic-hi) 12%,
+            var(--nav-conic-lo) 26%,
+            var(--nav-conic-lo) 68%,
+            var(--nav-conic-hi) 82%,
+            var(--nav-conic-lo) 100%
           );
           animation: nav-spin 8s linear infinite;
         }
@@ -331,43 +331,43 @@ export default function App() {
           position: relative;
           overflow: hidden;
           border-radius: 9999px;
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
-          -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
+          background: var(--glass-fill);
+          backdrop-filter: blur(40px) saturate(180%) brightness(1.06);
+          -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.06);
           box-shadow:
-            inset 0  1px 0 rgba(255,255,255,0.35),
-            inset 0 -1px 0 rgba(0,0,0,0.18),
-            0 8px 48px rgba(0,0,0,0.45);
+            inset 0  1px 0 var(--glass-inset-hi),
+            inset 0 -1px 0 var(--glass-inset-lo),
+            0 8px 48px var(--glass-shadow);
         }
 
-        /* Nav button — glass effect with green tint */
+        /* Nav button — glass effect with green tint, border adapts to mode */
         .nav-button {
           background: linear-gradient(135deg, rgba(24,100,64,0.15), rgba(24,100,64,0.08));
-          backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
-          -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
+          backdrop-filter: blur(20px) saturate(160%);
+          -webkit-backdrop-filter: blur(20px) saturate(160%);
           border: 1px solid rgba(24,100,64,0.35);
           box-shadow:
-            inset 0  1px 0 rgba(255,255,255,0.25),
-            inset 0 -1px 0 rgba(0,0,0,0.18),
-            0 8px 32px rgba(0,0,0,0.35);
+            inset 0  1px 0 var(--glass-inset-hi),
+            inset 0 -1px 0 var(--glass-inset-lo),
+            0 4px 16px var(--glass-shadow);
         }
         .nav-button:hover {
           background: linear-gradient(135deg, rgba(24,100,64,0.25), rgba(24,100,64,0.15));
           border-color: rgba(24,100,64,0.5);
         }
 
-        /* Caption pane — same glass recipe as the nav bar */
+        /* Caption / list pane — glass adapts to light and dark */
         .glass-pane {
           position: relative;
           border-radius: 1.7rem;
-          border: 1px solid rgba(255,255,255,0.18);
-          background: rgba(255,255,255,0.04);
-          backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
-          -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
+          border: 1px solid var(--glass-border-color);
+          background: var(--glass-fill);
+          backdrop-filter: blur(40px) saturate(180%) brightness(1.06);
+          -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.06);
           box-shadow:
-            inset 0  1px 0 rgba(255,255,255,0.35),
-            inset 0 -1px 0 rgba(0,0,0,0.18),
-            0 8px 48px rgba(0,0,0,0.45);
+            inset 0  1px 0 var(--glass-inset-hi),
+            inset 0 -1px 0 var(--glass-inset-lo),
+            0 8px 48px var(--glass-shadow);
         }
 
         .nav-shadow {

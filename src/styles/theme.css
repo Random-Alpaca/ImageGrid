@@ -1,4 +1,4 @@
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (@media (prefers-color-scheme: dark));
 
 /* OS-based font overrides — data-os is set by the inline script in index.html */
 :root[data-os="apple"] {
@@ -64,43 +64,67 @@
   --sidebar-accent-foreground: #262626;
   --sidebar-border: #e5e5e5;
   --sidebar-ring: #a3a3a3;
+
+  /* Glass component tokens — light mode */
+  --glass-fill: rgba(239, 226, 198, 0.55);
+  --glass-border-color: rgba(44, 31, 22, 0.16);
+  --glass-text: #211813;
+  --glass-text-muted: rgba(33, 24, 19, 0.60);
+  --glass-inset-hi: rgba(255, 255, 255, 0.70);
+  --glass-inset-lo: rgba(0, 0, 0, 0.05);
+  --glass-shadow: rgba(0, 0, 0, 0.15);
+  --nav-conic-hi: rgba(44, 31, 22, 0.55);
+  --nav-conic-lo: rgba(44, 31, 22, 0.04);
 }
 
-.dark {
-  --background: #171717;
-  --foreground: #fafafa;
-  --card: #171717;
-  --card-foreground: #fafafa;
-  --popover: #171717;
-  --popover-foreground: #fafafa;
-  --primary: #fafafa;
-  --primary-foreground: #262626;
-  --secondary: #404040;
-  --secondary-foreground: #fafafa;
-  --muted: #404040;
-  --muted-foreground: #a3a3a3;
-  --accent: #186440;
-  --accent-foreground: #fafafa;
-  --destructive: #991b1b;
-  --destructive-foreground: #ef4444;
-  --border: #404040;
-  --input: #404040;
-  --ring: #737373;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --chart-1: #2563eb;
-  --chart-2: #10b981;
-  --chart-3: #f59e0b;
-  --chart-4: #a855f7;
-  --chart-5: #f43f5e;
-  --sidebar: #262626;
-  --sidebar-foreground: #fafafa;
-  --sidebar-primary: #2563eb;
-  --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #404040;
-  --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: #404040;
-  --sidebar-ring: #737373;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #fafafa;
+    --card: #171717;
+    --card-foreground: #fafafa;
+    --popover: #171717;
+    --popover-foreground: #fafafa;
+    --primary: #fafafa;
+    --primary-foreground: #262626;
+    --secondary: #404040;
+    --secondary-foreground: #fafafa;
+    --muted: #404040;
+    --muted-foreground: #a3a3a3;
+    --accent: #186440;
+    --accent-foreground: #fafafa;
+    --destructive: #991b1b;
+    --destructive-foreground: #ef4444;
+    --border: #404040;
+    --input: #404040;
+    --ring: #737373;
+    --font-weight-medium: 500;
+    --font-weight-normal: 400;
+    --chart-1: #2563eb;
+    --chart-2: #10b981;
+    --chart-3: #f59e0b;
+    --chart-4: #a855f7;
+    --chart-5: #f43f5e;
+    --sidebar: #262626;
+    --sidebar-foreground: #fafafa;
+    --sidebar-primary: #2563eb;
+    --sidebar-primary-foreground: #fafafa;
+    --sidebar-accent: #404040;
+    --sidebar-accent-foreground: #fafafa;
+    --sidebar-border: #404040;
+    --sidebar-ring: #737373;
+
+    /* Glass component tokens — dark mode */
+    --glass-fill: rgba(255, 255, 255, 0.04);
+    --glass-border-color: rgba(255, 255, 255, 0.18);
+    --glass-text: rgba(255, 255, 255, 0.95);
+    --glass-text-muted: rgba(255, 255, 255, 0.65);
+    --glass-inset-hi: rgba(255, 255, 255, 0.35);
+    --glass-inset-lo: rgba(0, 0, 0, 0.18);
+    --glass-shadow: rgba(0, 0, 0, 0.45);
+    --nav-conic-hi: rgba(255, 255, 255, 0.70);
+    --nav-conic-lo: rgba(255, 255, 255, 0.03);
+  }
 }
 
 @theme inline {
