@@ -112,7 +112,7 @@ export default function App() {
           {/* Bottom vignette — shadow inside the dome */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.12))" }} />
           <div className="relative flex items-center gap-3"><span className="text-xl font-medium" style={{ textShadow: "0 1px 12px rgba(0,0,0,0.7), 0 0 40px rgba(0,0,0,0.4)" }}>Jacky Xue</span></div>
-          <a href="https://jxue.ca" className="relative flex items-center gap-2 rounded-full bg-[#186440] px-4 py-2 text-sm text-white transition hover:bg-[#0f4d2d]">jxue.ca</a>
+          <a href="https://jxue.ca" className="nav-button relative flex items-center gap-2 rounded-full px-4 py-2 text-sm text-white transition">home</a>
         </nav>
         {/* Lifted shadow — blurred copy below for the floating 3-D look */}
         <div className="nav-shadow" />
@@ -265,6 +265,22 @@ export default function App() {
             inset 0  1px 0 rgba(255,255,255,0.35),
             inset 0 -1px 0 rgba(0,0,0,0.18),
             0 8px 48px rgba(0,0,0,0.45);
+        }
+
+        /* Nav button — glass effect matching the bar */
+        .nav-button {
+          background: rgba(255,255,255,0.04);
+          backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
+          -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.08);
+          border: 1px solid rgba(255,255,255,0.18);
+          box-shadow:
+            inset 0  1px 0 rgba(255,255,255,0.35),
+            inset 0 -1px 0 rgba(0,0,0,0.18),
+            0 8px 32px rgba(0,0,0,0.35);
+        }
+        .nav-button:hover {
+          background: rgba(255,255,255,0.08);
+          border-color: rgba(255,255,255,0.25);
         }
 
         /* Caption pane — same glass recipe as the nav bar */
