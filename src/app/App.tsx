@@ -112,7 +112,7 @@ export default function App() {
           {/* Bottom vignette — shadow inside the dome */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.12))" }} />
           <div className="relative flex items-center gap-3"><span className="text-xl font-medium" style={{ textShadow: "0 1px 12px rgba(0,0,0,0.7), 0 0 40px rgba(0,0,0,0.4)" }}>Jacky Xue</span></div>
-          <a href="https://jxue.ca" className="relative flex items-center gap-2 rounded-full bg-[#efe2c6] px-4 py-2 text-sm text-[#17130f] transition hover:scale-105">jxue.ca</a>
+          <a href="https://jxue.ca" className="relative flex items-center gap-2 rounded-full bg-[#186440] px-4 py-2 text-sm text-white transition hover:bg-[#0f4d2d]">jxue.ca</a>
         </nav>
         {/* Lifted shadow — blurred copy below for the floating 3-D look */}
         <div className="nav-shadow" />
@@ -211,7 +211,7 @@ export default function App() {
                     exit={{ opacity: 0, x: 18, scale: 0.97, transition: { duration: 0.24, ease: [0.2, 0.8, 0.2, 1] } }}
                     onClick={(event) => event.stopPropagation()}
                   >
-                    <button onClick={closeModal} className="mb-7 ml-auto grid size-10 place-items-center rounded-full bg-white/10 transition hover:bg-white/20"><X className="size-5" /></button>
+                    <button onClick={closeModal} className="mb-7 ml-auto grid size-10 place-items-center rounded-full bg-[#186440]/20 transition hover:bg-[#186440]/30"><X className="size-5" /></button>
                     <h3 className="text-5xl font-medium leading-[0.95] tracking-[-0.02em]" style={{ textShadow: "0 1px 12px rgba(0,0,0,0.6)" }}>{selected.title}</h3>
                     <p className="mt-6 leading-7 text-white/75">{selected.caption}</p>
                   </motion.aside>
