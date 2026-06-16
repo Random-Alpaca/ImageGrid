@@ -75,6 +75,7 @@
   --glass-shadow: rgba(0, 0, 0, 0.12);
   --nav-conic-hi: rgba(28, 27, 31, 0.45);
   --nav-conic-lo: rgba(28, 27, 31, 0.03);
+  --dim-overlay: rgba(200, 200, 210, 1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -124,6 +125,7 @@
     --glass-shadow: rgba(0, 0, 0, 0.45);
     --nav-conic-hi: rgba(255, 255, 255, 0.70);
     --nav-conic-lo: rgba(255, 255, 255, 0.03);
+    --dim-overlay: rgba(0, 0, 0, 1);
   }
 }
 

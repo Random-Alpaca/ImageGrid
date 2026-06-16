@@ -119,7 +119,7 @@ export default function App() {
   };
 
   return (
-    <main className="h-screen overflow-hidden bg-black text-foreground selection:bg-primary selection:text-primary-foreground">
+    <main className="h-screen overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
 
       {/* Outer wrapper — owns fixed positioning and the spinning conic gradient border */}
       <div className="nav-wrap" style={{ animationPlayState: isPaused ? "paused" : "running" }}>
@@ -173,7 +173,7 @@ export default function App() {
                         animate={{ scale: isExpanded ? 1.06 : 1 }}
                         transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
                         style={{ transformOrigin: isExpanded ? origin : "center center", zIndex: isExpanded ? 20 : 1 }}
-                        className={`${work.span} group/card relative min-h-0 overflow-hidden rounded-[1.15rem] bg-black text-left shadow-sm transition-[border-radius,box-shadow] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:rounded-[1.6rem] hover:shadow-2xl hover:shadow-[rgba(0,0,0,0.45)] focus:outline-none focus:ring-2 focus:ring-primary`}
+                        className={`${work.span} group/card relative min-h-0 overflow-hidden rounded-[1.15rem] bg-muted text-left shadow-sm transition-[border-radius,box-shadow] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:rounded-[1.6rem] hover:shadow-2xl hover:shadow-[rgba(0,0,0,0.45)] focus:outline-none focus:ring-2 focus:ring-primary`}
                       >
                         <motion.img
                           layoutId={`portfolio-image-${work.id}`}
@@ -183,8 +183,8 @@ export default function App() {
                           transition={modalTransition}
                         />
                         <div
-                          className="absolute inset-0 bg-black transition-opacity duration-500 ease-[cubic-bezier(.2,.8,.2,1)]"
-                          style={{ opacity: isDimmed ? 0.6 : 0 }}
+                          className="absolute inset-0 transition-opacity duration-500 ease-[cubic-bezier(.2,.8,.2,1)]"
+                          style={{ opacity: isDimmed ? 0.55 : 0, background: "var(--dim-overlay)" }}
                         />
                       </motion.button>
                     );
