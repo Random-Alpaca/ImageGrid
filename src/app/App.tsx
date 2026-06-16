@@ -138,11 +138,14 @@ export default function App() {
                     style={{ transformOrigin: isExpanded ? origin : "center center", zIndex: isExpanded ? 20 : 1 }}
                     className={`${work.span} group/card relative min-h-0 overflow-hidden rounded-[1.15rem] bg-black text-left shadow-sm transition-[border-radius,box-shadow] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:rounded-[1.6rem] hover:shadow-2xl hover:shadow-[rgba(0,0,0,0.45)] focus:outline-none focus:ring-2 focus:ring-primary`}
                   >
+                    {/* Blurred fill — same image scaled up so no black bars show */}
+                    <img src={work.src} alt="" aria-hidden className="absolute inset-0 size-full scale-110 object-cover blur-xl opacity-70" />
                     <motion.img
                       layoutId={`portfolio-image-${work.id}`}
                       src={work.src}
                       alt={work.alt}
-                      className="size-full object-cover"
+                      className="absolute inset-0 size-full object-contain"
+                      style={{ zIndex: 1 }}
                       transition={modalTransition}
                     />
                     <div
@@ -182,11 +185,13 @@ export default function App() {
                 )}
               </AnimatePresence>
             <div className="relative z-10 h-full min-h-0 overflow-hidden bg-black md:h-full">
+              <img src={selected.src} alt="" aria-hidden className="absolute inset-0 size-full scale-110 object-cover blur-2xl opacity-60" />
               <motion.img
                 layoutId={`portfolio-image-${selected.id}`}
                 src={selected.src}
                 alt={selected.alt}
-                className="size-full object-cover"
+                className="absolute inset-0 size-full object-contain"
+                style={{ zIndex: 1 }}
                 transition={modalTransition}
               />
               <AnimatePresence>
