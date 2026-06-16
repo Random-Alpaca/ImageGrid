@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { X } from "lucide-react";
+import { LayoutGrid, LayoutList, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
@@ -56,6 +56,16 @@ export default function App() {
     };
   }, []);
   const imagePool = useMemo(() => buildImagePool(photoList), [photoList]);
+  const listPool = useMemo<PortfolioWork[]>(() =>
+    photoList.map((photo, i) => ({
+      ...photo,
+      alt: photo.alt ?? photo.title,
+      span: "",
+      id: `list-${photo.title}-${i}`,
+    })),
+    [photoList]
+  );
+  const [view, setView] = useState<"grid" | "list">("grid");
   const [selected, setSelected] = useState<PortfolioWork | null>(null);
   const [isClosing, setIsClosing] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
@@ -64,6 +74,13 @@ export default function App() {
   // The grid drift and the nav's spinning glass border both pause together so
   // the glass freezes in sync with the photos it's refracting.
   const isPaused = hovered !== null || selected !== null;
+
+  const toggleView = () => {
+    setSelected(null);
+    setIsClosing(false);
+    setHovered(null);
+    setView(v => v === "grid" ? "list" : "grid");
+  };
 
   // Compute a transform-origin from the tile's position inside the grid so the
   // subtle scale-up always reads as growing *inward* near the edges.
@@ -112,56 +129,112 @@ export default function App() {
           {/* Bottom vignette — shadow inside the dome */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.12))" }} />
           <div className="relative flex items-center gap-3"><span className="text-xl font-medium" style={{ textShadow: "0 1px 12px rgba(0,0,0,0.7), 0 0 40px rgba(0,0,0,0.4)" }}>Jacky Xue</span></div>
-          <a href="https://jxue.ca" className="nav-button relative flex items-center gap-2 rounded-full px-4 py-2 text-sm text-white transition">Home</a>
+          <div className="relative flex items-center gap-2">
+            <button onClick={toggleView} className="nav-button flex items-center justify-center rounded-full p-2 text-white transition" aria-label="Toggle view">
+              {view === "grid" ? <LayoutGrid className="size-4" /> : <LayoutList className="size-4" />}
+            </button>
+            <a href="https://jxue.ca" className="nav-button flex items-center gap-2 rounded-full px-4 py-2 text-sm text-white transition">Home</a>
+          </div>
         </nav>
         {/* Lifted shadow — blurred copy below for the floating 3-D look */}
         <div className="nav-shadow" />
       </div>
 
-      <section className="relative z-10 mx-auto flex h-screen w-full max-w-[1800px] flex-col">
-        <div className="relative flex-1 overflow-hidden">
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-14 bg-gradient-to-b from-black to-transparent" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28 bg-gradient-to-t from-black to-transparent" />
-          <div
-            className="animate-[drift_120s_linear_infinite] px-4 md:px-8"
-            style={{ willChange: "transform", transform: "translateZ(0)", animationPlayState: isPaused ? "paused" : "running" }}
+      <AnimatePresence mode="wait">
+        {view === "grid" ? (
+          <motion.section
+            key="grid"
+            className="relative z-10 mx-auto flex h-screen w-full max-w-[1800px] flex-col"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
           >
-            <div data-grid className="grid grid-flow-dense auto-rows-[122px] grid-cols-3 gap-3 pt-4 md:auto-rows-[150px] md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
-              {imagePool.map((work) => {
-                const isExpanded = hovered === work.id;
-                const isDimmed = hovered !== null && !isExpanded;
+            <div className="relative flex-1 overflow-hidden">
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-14 bg-gradient-to-b from-black to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28 bg-gradient-to-t from-black to-transparent" />
+              <div
+                className="animate-[drift_120s_linear_infinite] px-4 md:px-8"
+                style={{ willChange: "transform", transform: "translateZ(0)", animationPlayState: isPaused ? "paused" : "running" }}
+              >
+                <div data-grid className="grid grid-flow-dense auto-rows-[122px] grid-cols-3 gap-3 pt-4 md:auto-rows-[150px] md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
+                  {imagePool.map((work) => {
+                    const isExpanded = hovered === work.id;
+                    const isDimmed = hovered !== null && !isExpanded;
 
-                return (
-                  <motion.button
-                    key={work.id}
-                    onMouseEnter={(event) => handleEnter(event, work.id)}
-                    onMouseLeave={() => setHovered(null)}
-                    onFocus={(event) => handleEnter(event, work.id)}
-                    onBlur={() => setHovered(null)}
-                    onClick={() => openModal(work)}
-                    animate={{ scale: isExpanded ? 1.06 : 1 }}
-                    transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
-                    style={{ transformOrigin: isExpanded ? origin : "center center", zIndex: isExpanded ? 20 : 1 }}
-                    className={`${work.span} group/card relative min-h-0 overflow-hidden rounded-[1.15rem] bg-black text-left shadow-sm transition-[border-radius,box-shadow] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:rounded-[1.6rem] hover:shadow-2xl hover:shadow-[rgba(0,0,0,0.45)] focus:outline-none focus:ring-2 focus:ring-primary`}
-                  >
-                    <motion.img
-                      layoutId={`portfolio-image-${work.id}`}
-                      src={work.src}
-                      alt={work.alt}
-                      className="size-full object-cover"
-                      transition={modalTransition}
-                    />
-                    <div
-                      className="absolute inset-0 bg-black transition-opacity duration-500 ease-[cubic-bezier(.2,.8,.2,1)]"
-                      style={{ opacity: isDimmed ? 0.6 : 0 }}
-                    />
-                  </motion.button>
-                );
-              })}
+                    return (
+                      <motion.button
+                        key={work.id}
+                        onMouseEnter={(event) => handleEnter(event, work.id)}
+                        onMouseLeave={() => setHovered(null)}
+                        onFocus={(event) => handleEnter(event, work.id)}
+                        onBlur={() => setHovered(null)}
+                        onClick={() => openModal(work)}
+                        animate={{ scale: isExpanded ? 1.06 : 1 }}
+                        transition={{ duration: 0.45, ease: [0.2, 0.8, 0.2, 1] }}
+                        style={{ transformOrigin: isExpanded ? origin : "center center", zIndex: isExpanded ? 20 : 1 }}
+                        className={`${work.span} group/card relative min-h-0 overflow-hidden rounded-[1.15rem] bg-black text-left shadow-sm transition-[border-radius,box-shadow] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:rounded-[1.6rem] hover:shadow-2xl hover:shadow-[rgba(0,0,0,0.45)] focus:outline-none focus:ring-2 focus:ring-primary`}
+                      >
+                        <motion.img
+                          layoutId={`portfolio-image-${work.id}`}
+                          src={work.src}
+                          alt={work.alt}
+                          className="size-full object-cover"
+                          transition={modalTransition}
+                        />
+                        <div
+                          className="absolute inset-0 bg-black transition-opacity duration-500 ease-[cubic-bezier(.2,.8,.2,1)]"
+                          style={{ opacity: isDimmed ? 0.6 : 0 }}
+                        />
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </motion.section>
+        ) : (
+          <motion.section
+            key="list"
+            className="relative z-10 h-screen overflow-y-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
+          >
+            <div className="mx-auto max-w-3xl space-y-3 px-4 pb-12 pt-28 md:px-8">
+              {listPool.map((item, i) => (
+                <motion.button
+                  key={item.id}
+                  onClick={() => openModal(item)}
+                  className="w-full text-left"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: Math.min(i * 0.04, 0.3), ease: [0.2, 0.8, 0.2, 1] }}
+                >
+                  <div className="flex items-stretch gap-4 rounded-[1.6rem] p-2 transition-colors hover:bg-white/[0.03]">
+                    {/* Thumbnail */}
+                    <div className="relative h-40 w-32 shrink-0 overflow-hidden rounded-[1.2rem] bg-black shadow-xl shadow-black/60 ring-1 ring-white/10 md:h-48 md:w-40">
+                      <motion.img
+                        layoutId={`portfolio-image-${item.id}`}
+                        src={item.src}
+                        alt={item.alt}
+                        className="size-full object-cover"
+                        transition={modalTransition}
+                      />
+                    </div>
+                    {/* Info pane */}
+                    <div className="glass-pane flex flex-1 flex-col justify-center p-5 md:p-6">
+                      <h3 className="text-2xl font-medium leading-tight tracking-[-0.02em] text-white" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.5)" }}>{item.title}</h3>
+                      <p className="mt-2 text-sm leading-6 text-white/65">{item.caption}</p>
+                    </div>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </motion.section>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {selected && (
