@@ -30,11 +30,18 @@ function mulberry32(seed: number) {
   };
 }
 
-function pickSpan(rng: () => number): string {
-  let r = rng() * SPAN_TOTAL;
-  for (const s of SPAN_WEIGHTS) {
-    if (r < s.w) return s.span;
-    r -= s.w;
+const LARGE_SPANS = new Set(["col-span-3 row-span-2", "col-span-2 row-span-3"]);
+
+function pickSpan(rng: () => number, lastSpan?: string): string {
+  for (let attempt = 0; attempt < 6; attempt++) {
+    let r = rng() * SPAN_TOTAL;
+    for (const s of SPAN_WEIGHTS) {
+      if (r < s.w) {
+        if (LARGE_SPANS.has(s.span) && s.span === lastSpan) break; // retry
+        return s.span;
+      }
+      r -= s.w;
+    }
   }
   return SPAN_WEIGHTS[0].span;
 }
@@ -88,12 +95,15 @@ function buildImagePool(source: Photo[]): PortfolioWork[] {
     if (recent.length > window) recent.shift();
   }
 
+  let lastSpan: string | undefined;
   return order.map((photoIndex, index) => {
     const photo = source[photoIndex];
+    const span = pickSpan(rng, lastSpan);
+    lastSpan = span;
     return {
       ...photo,
       alt: photo.alt ?? photo.title,
-      span: pickSpan(rng),
+      span,
       id: `${photo.title}-${index}`,
     };
   });
