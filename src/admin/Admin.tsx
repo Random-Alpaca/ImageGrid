@@ -74,6 +74,11 @@ export default function Admin() {
   const [saveMsg, setSaveMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
+  // Bulk import
+  const [bulkJson, setBulkJson] = useState("");
+  const [bulkError, setBulkError] = useState<string | null>(null);
+  const [bulkParsed, setBulkParsed] = useState<Photo[] | null>(null);
+
   useEffect(() => {
     fetchPhotos().then(setList);
   }, []);
@@ -128,6 +133,51 @@ export default function Admin() {
     } else {
       setSaveMsg({ ok: false, text: result.error || "Save failed." });
     }
+  };
+
+  const parseBulk = (raw: string) => {
+    setBulkError(null);
+    setBulkParsed(null);
+    if (!raw.trim()) return;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      setBulkError("Invalid JSON — check for missing quotes or trailing commas.");
+      return;
+    }
+    const arr = Array.isArray(parsed) ? parsed : (parsed as { photos?: unknown })?.photos;
+    if (!Array.isArray(arr)) {
+      setBulkError("Expected a JSON array [ {…}, … ] or an object with a \"photos\" key.");
+      return;
+    }
+    const photos: Photo[] = [];
+    for (let i = 0; i < arr.length; i++) {
+      const p = arr[i] as Record<string, unknown>;
+      if (typeof p?.src !== "string" || !p.src) {
+        setBulkError(`Item ${i + 1}: missing or invalid "src" (string required).`);
+        return;
+      }
+      if (typeof p?.title !== "string" || !p.title) {
+        setBulkError(`Item ${i + 1}: missing or invalid "title" (string required).`);
+        return;
+      }
+      photos.push({
+        src: p.src,
+        title: p.title,
+        caption: typeof p.caption === "string" ? p.caption : "",
+        ...(typeof p.alt === "string" ? { alt: p.alt } : {}),
+      });
+    }
+    setBulkParsed(photos);
+  };
+
+  const bulkImport = (mode: "append" | "replace") => {
+    if (!bulkParsed) return;
+    update(mode === "replace" ? bulkParsed : [...list, ...bulkParsed]);
+    setBulkJson("");
+    setBulkParsed(null);
+    setBulkError(null);
   };
 
   const copyExport = async () => {
@@ -241,6 +291,50 @@ export default function Admin() {
               className="justify-self-start rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition hover:scale-105"
             >
               Add photo
+            </button>
+          </div>
+        </section>
+
+        {/* Bulk import */}
+        <section className="mb-8 rounded-2xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.03)] p-5 md:p-6">
+          <h2 className="mb-1 text-lg">Bulk import</h2>
+          <p className="mb-4 text-sm text-[rgba(255,255,255,0.5)]">
+            Paste a JSON array of photos. Each item needs{" "}
+            <code className="rounded bg-[rgba(255,255,255,0.08)] px-1.5 py-0.5">src</code> and{" "}
+            <code className="rounded bg-[rgba(255,255,255,0.08)] px-1.5 py-0.5">title</code>;{" "}
+            <code className="rounded bg-[rgba(255,255,255,0.08)] px-1.5 py-0.5">caption</code> and{" "}
+            <code className="rounded bg-[rgba(255,255,255,0.08)] px-1.5 py-0.5">alt</code> are optional.
+          </p>
+          <textarea
+            className={`${inputClass} min-h-36 resize-y font-mono text-xs`}
+            placeholder={`[\n  { "src": "https://…", "title": "…", "caption": "…" },\n  …\n]`}
+            value={bulkJson}
+            onChange={(e) => {
+              setBulkJson(e.target.value);
+              parseBulk(e.target.value);
+            }}
+            spellCheck={false}
+          />
+          {bulkError && <p className="mt-2 text-sm text-[#f0a3a3]">{bulkError}</p>}
+          {bulkParsed && (
+            <p className="mt-2 text-sm text-[#9fd9a4]">
+              {bulkParsed.length} photo{bulkParsed.length === 1 ? "" : "s"} ready to import.
+            </p>
+          )}
+          <div className="mt-4 flex gap-3">
+            <button
+              onClick={() => bulkImport("append")}
+              disabled={!bulkParsed}
+              className="rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition hover:scale-105 disabled:opacity-40 disabled:hover:scale-100"
+            >
+              Append to list
+            </button>
+            <button
+              onClick={() => bulkImport("replace")}
+              disabled={!bulkParsed}
+              className="rounded-full border border-[rgba(255,255,255,0.25)] px-5 py-2.5 text-sm transition hover:bg-[rgba(255,255,255,0.08)] disabled:opacity-40"
+            >
+              Replace all
             </button>
           </div>
         </section>
