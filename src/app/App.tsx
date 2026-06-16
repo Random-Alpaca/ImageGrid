@@ -77,10 +77,12 @@ export default function App() {
 
     setIsClosing(true);
     setHovered(null);
+    // 280ms: just long enough for the caption exit (0.24s) to finish before
+    // the backdrop fade and layoutId fly-back start — all three then overlap.
     window.setTimeout(() => {
       setSelected(null);
       setIsClosing(false);
-    }, 460);
+    }, 280);
   };
 
   const handleEnter = (event: React.MouseEvent<HTMLElement>, id: string) => {
@@ -173,13 +175,13 @@ export default function App() {
           >
             <div
               className="flex h-[88vh] w-full max-w-6xl flex-col items-center justify-center gap-4 md:grid md:grid-cols-[minmax(0,1fr)_390px] md:gap-8"
-              onClick={(event) => event.stopPropagation()}
             >
               {/* Figure hugs the photo's native proportions — no bars, no blurred fill */}
               <motion.figure
                 className="relative max-h-[58vh] max-w-full overflow-hidden rounded-[1.8rem] bg-black shadow-2xl shadow-black/70 md:ml-auto md:max-h-[84vh] md:max-w-full"
                 layout
                 transition={modalTransition}
+                onClick={(event) => event.stopPropagation()}
               >
                 <motion.img
                   layoutId={`portfolio-image-${selected.id}`}
@@ -207,6 +209,7 @@ export default function App() {
                     initial={{ opacity: 0, x: 28, scale: 0.96 }}
                     animate={{ opacity: 1, x: 0, scale: 1, transition: { ...chromeTransition, delay: 0.92 } }}
                     exit={{ opacity: 0, x: 18, scale: 0.97, transition: { duration: 0.24, ease: [0.2, 0.8, 0.2, 1] } }}
+                    onClick={(event) => event.stopPropagation()}
                   >
                     <button onClick={closeModal} className="mb-7 ml-auto grid size-10 place-items-center rounded-full bg-white/10 transition hover:bg-white/20"><X className="size-5" /></button>
                     <h3 className="text-5xl font-medium leading-[0.95] tracking-[-0.02em]" style={{ textShadow: "0 1px 12px rgba(0,0,0,0.6)" }}>{selected.title}</h3>
