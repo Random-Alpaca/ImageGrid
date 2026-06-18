@@ -52,9 +52,9 @@ export const photos: Photo[] = [`;
   return `${header}\n${body}\n];\n`;
 }
 
-// "Travel, Studio" ↔ ["Travel", "Studio"]
+// One portfolio per line, so names may contain spaces and commas.
 const parsePortfolios = (s: string): string[] =>
-  s.split(",").map((x) => x.trim()).filter(Boolean);
+  s.split("\n").map((x) => x.trim()).filter(Boolean);
 
 const inputClass =
   "w-full rounded-xl border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.05)] px-4 py-3 text-white placeholder:text-[rgba(255,255,255,0.35)] outline-none transition focus:border-[rgba(255,255,255,0.4)]";
@@ -294,9 +294,9 @@ export default function Admin() {
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
             />
-            <input
-              className={inputClass}
-              placeholder="Portfolios, comma-separated (optional) — e.g. Travel, Studio"
+            <textarea
+              className={`${inputClass} min-h-20 resize-y`}
+              placeholder="Portfolios, one per line (optional)"
               value={portfolios}
               onChange={(e) => setPortfolios(e.target.value)}
             />
@@ -387,10 +387,10 @@ export default function Admin() {
                       <input className={inputClass} placeholder="Title" value={photo.title} onChange={(e) => editField(index, { title: e.target.value })} />
                       <textarea className={`${inputClass} min-h-20 resize-y`} placeholder="Caption" value={photo.caption} onChange={(e) => editField(index, { caption: e.target.value })} />
                       <input className={inputClass} placeholder="Alt text (optional)" value={photo.alt ?? ""} onChange={(e) => editField(index, { alt: e.target.value || undefined })} />
-                      <input
-                        className={inputClass}
-                        placeholder="Portfolios, comma-separated"
-                        value={(photo.portfolios ?? []).join(", ")}
+                      <textarea
+                        className={`${inputClass} min-h-20 resize-y`}
+                        placeholder="Portfolios, one per line"
+                        value={(photo.portfolios ?? []).join("\n")}
                         onChange={(e) => {
                           const tags = parsePortfolios(e.target.value);
                           editField(index, { portfolios: tags.length ? tags : undefined });

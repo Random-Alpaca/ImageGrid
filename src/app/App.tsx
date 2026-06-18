@@ -123,6 +123,18 @@ const chromeTransition = {
   ease: [0.2, 0.8, 0.2, 1] as const,
 };
 
+const panelVariants = {
+  hidden: { opacity: 0, y: -8, scale: 0.95, transition: { duration: 0.16, ease: [0.2, 0.8, 0.2, 1] as const } },
+  visible: {
+    opacity: 1, y: 0, scale: 1,
+    transition: { duration: 0.24, ease: [0.2, 0.8, 0.2, 1] as const, staggerChildren: 0.035, delayChildren: 0.04 },
+  },
+};
+const panelItemVariants = {
+  hidden: { opacity: 0, x: 8 },
+  visible: { opacity: 1, x: 0 },
+};
+
 export default function App() {
   // Seed with the static list for an instant first paint, then swap in the
   // backend's published photos once they load.
@@ -243,25 +255,10 @@ export default function App() {
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.12))" }} />
           <div className="relative flex items-center gap-3"><span className="text-xl font-medium" style={{ color: "var(--glass-text)", textShadow: "0 1px 8px var(--glass-shadow), 0 0 30px var(--glass-shadow)" }}>Jacky Xue</span></div>
           <div className="relative flex items-center gap-2">
-            {portfolioNames.length > 1 && (
-              <div className="relative">
-                <button onClick={() => setPortfoliosOpen((o) => !o)} className="nav-button-neutral flex items-center justify-center rounded-full p-2 transition" style={{ color: "var(--glass-text)" }} aria-label="Portfolios" aria-expanded={portfoliosOpen}>
-                  <Folders className="size-4" />
-                </button>
-                {portfoliosOpen && (
-                  <>
-                  <div className="fixed inset-0 z-30" onClick={() => setPortfoliosOpen(false)} />
-                  <div className="glass-pane absolute right-0 top-[calc(100%+0.75rem)] z-40 w-56 p-2" style={{ color: "var(--glass-text)" }}>
-                    {portfolioNames.map((name) => (
-                      <label key={name} className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors hover:bg-white/[0.06]">
-                        <input type="checkbox" checked={!hidden.has(name)} onChange={() => togglePortfolio(name)} className="size-4 accent-[var(--primary)]" />
-                        <span className="truncate">{name}</span>
-                      </label>
-                    ))}
-                  </div>
-                  </>
-                )}
-              </div>
+            {portfolioNames.length > 0 && (
+              <button onClick={() => setPortfoliosOpen((o) => !o)} className="nav-button-neutral flex items-center justify-center rounded-full p-2 transition" style={{ color: "var(--glass-text)" }} aria-label="Portfolios" aria-expanded={portfoliosOpen}>
+                <Folders className="size-4" />
+              </button>
             )}
             <button onClick={toggleView} className="nav-button-neutral flex items-center justify-center rounded-full p-2 transition" style={{ color: "var(--glass-text)" }} aria-label="Toggle view">
               {view === "grid" ? <LayoutGrid className="size-4" /> : <LayoutList className="size-4" />}
@@ -271,6 +268,38 @@ export default function App() {
         </nav>
         {/* Lifted shadow — blurred copy below for the floating 3-D look */}
         <div className="nav-shadow" />
+
+        {/* Panel lives inside nav-wrap (the fixed container) but outside nav-glass
+            so it's not clipped by nav-glass's overflow:hidden pill shape. */}
+        <AnimatePresence>
+          {portfoliosOpen && portfolioNames.length > 0 && (
+            <motion.div
+              key="portfolios-panel"
+              variants={panelVariants}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              className="glass-pane w-56 origin-top-right p-2"
+              style={{ position: "absolute", top: "calc(100% + 0.5rem)", right: "1px", color: "var(--glass-text)", borderRadius: "1.25rem", zIndex: 40 }}
+            >
+              {portfolioNames.map((name) => {
+                const active = !hidden.has(name);
+                return (
+                  <motion.button
+                    key={name}
+                    variants={panelItemVariants}
+                    onClick={() => togglePortfolio(name)}
+                    aria-pressed={active}
+                    className={`w-full rounded-xl px-3 py-2 text-left text-sm transition-colors ${active ? "bg-white/[0.12] text-white" : "text-white/40 hover:bg-white/[0.06] hover:text-white/70"}`}
+                  >
+                    {name}
+                  </motion.button>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
+        {portfoliosOpen && <div className="fixed inset-0 z-30" onClick={() => setPortfoliosOpen(false)} />}
       </div>
 
       <AnimatePresence mode="wait">
