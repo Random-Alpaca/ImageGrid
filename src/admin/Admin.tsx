@@ -7,6 +7,7 @@ import {
   ExternalLink,
   Loader2,
   Lock,
+  Pencil,
   Save,
   Trash2,
 } from "lucide-react";
@@ -28,6 +29,7 @@ export type Photo = {
   title: string;
   caption: string;
   alt?: string;
+  portfolios?: string[];
 };
 
 export const photos: Photo[] = [`;
@@ -41,6 +43,7 @@ export const photos: Photo[] = [`;
         `    caption: ${JSON.stringify(p.caption)},`,
       ];
       if (p.alt) lines.push(`    alt: ${JSON.stringify(p.alt)},`);
+      if (p.portfolios && p.portfolios.length) lines.push(`    portfolios: ${JSON.stringify(p.portfolios)},`);
       lines.push("  },");
       return lines.join("\n");
     })
@@ -48,6 +51,10 @@ export const photos: Photo[] = [`;
 
   return `${header}\n${body}\n];\n`;
 }
+
+// "Travel, Studio" ↔ ["Travel", "Studio"]
+const parsePortfolios = (s: string): string[] =>
+  s.split(",").map((x) => x.trim()).filter(Boolean);
 
 const inputClass =
   "w-full rounded-xl border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.05)] px-4 py-3 text-white placeholder:text-[rgba(255,255,255,0.35)] outline-none transition focus:border-[rgba(255,255,255,0.4)]";
@@ -67,7 +74,9 @@ export default function Admin() {
   const [src, setSrc] = useState("");
   const [title, setTitle] = useState("");
   const [caption, setCaption] = useState("");
+  const [portfolios, setPortfolios] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+  const [editing, setEditing] = useState<number | null>(null);
 
   // Save / export
   const [saving, setSaving] = useState(false);
@@ -106,11 +115,17 @@ export default function Admin() {
     if (!src.trim()) return setFormError("An image URL is required.");
     if (!title.trim()) return setFormError("A title is required.");
     setFormError(null);
-    update([...list, { src: src.trim(), title: title.trim(), caption: caption.trim() }]);
+    const tags = parsePortfolios(portfolios);
+    update([...list, { src: src.trim(), title: title.trim(), caption: caption.trim(), ...(tags.length ? { portfolios: tags } : {}) }]);
     setSrc("");
     setTitle("");
     setCaption("");
+    setPortfolios("");
   };
+
+  // Edit an existing photo in place; edits go straight into `list` and publish on Save.
+  const editField = (index: number, patch: Partial<Photo>) =>
+    update(list.map((p, i) => (i === index ? { ...p, ...patch } : p)));
 
   const remove = (index: number) => update(list.filter((_, i) => i !== index));
 
@@ -167,6 +182,9 @@ export default function Admin() {
         title: p.title,
         caption: typeof p.caption === "string" ? p.caption : "",
         ...(typeof p.alt === "string" ? { alt: p.alt } : {}),
+        ...(Array.isArray(p.portfolios)
+          ? { portfolios: (p.portfolios as unknown[]).filter((s): s is string => typeof s === "string") }
+          : {}),
       });
     }
     setBulkParsed(photos);
@@ -276,6 +294,12 @@ export default function Admin() {
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
             />
+            <input
+              className={inputClass}
+              placeholder="Portfolios, comma-separated (optional) — e.g. Travel, Studio"
+              value={portfolios}
+              onChange={(e) => setPortfolios(e.target.value)}
+            />
             {src.trim() && (
               <img
                 src={src.trim()}
@@ -302,8 +326,9 @@ export default function Admin() {
             Paste a JSON array of photos. Each item needs{" "}
             <code className="rounded bg-[rgba(255,255,255,0.08)] px-1.5 py-0.5">src</code> and{" "}
             <code className="rounded bg-[rgba(255,255,255,0.08)] px-1.5 py-0.5">title</code>;{" "}
-            <code className="rounded bg-[rgba(255,255,255,0.08)] px-1.5 py-0.5">caption</code> and{" "}
-            <code className="rounded bg-[rgba(255,255,255,0.08)] px-1.5 py-0.5">alt</code> are optional.
+            <code className="rounded bg-[rgba(255,255,255,0.08)] px-1.5 py-0.5">caption</code>,{" "}
+            <code className="rounded bg-[rgba(255,255,255,0.08)] px-1.5 py-0.5">alt</code>, and{" "}
+            <code className="rounded bg-[rgba(255,255,255,0.08)] px-1.5 py-0.5">portfolios</code> (array of strings) are optional.
           </p>
           <textarea
             className={`${inputClass} min-h-36 resize-y font-mono text-xs`}
@@ -348,21 +373,49 @@ export default function Admin() {
             <ul className="grid gap-3">
               {list.map((photo, index) => (
                 <li
-                  key={`${photo.src}-${index}`}
-                  className="flex items-center gap-4 rounded-2xl border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.03)] p-3"
+                  key={index}
+                  className="flex items-start gap-4 rounded-2xl border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.03)] p-3"
                 >
                   <img
                     src={photo.src}
                     alt={photo.alt ?? photo.title}
                     className="size-16 shrink-0 rounded-lg bg-[rgba(255,255,255,0.06)] object-cover"
                   />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate">{photo.title}</p>
-                    <p className="truncate text-sm text-[rgba(255,255,255,0.5)]">
-                      {photo.caption || "No caption"}
-                    </p>
-                  </div>
+                  {editing === index ? (
+                    <div className="grid min-w-0 flex-1 gap-2">
+                      <input className={inputClass} placeholder="Image URL" value={photo.src} onChange={(e) => editField(index, { src: e.target.value })} />
+                      <input className={inputClass} placeholder="Title" value={photo.title} onChange={(e) => editField(index, { title: e.target.value })} />
+                      <textarea className={`${inputClass} min-h-20 resize-y`} placeholder="Caption" value={photo.caption} onChange={(e) => editField(index, { caption: e.target.value })} />
+                      <input className={inputClass} placeholder="Alt text (optional)" value={photo.alt ?? ""} onChange={(e) => editField(index, { alt: e.target.value || undefined })} />
+                      <input
+                        className={inputClass}
+                        placeholder="Portfolios, comma-separated"
+                        value={(photo.portfolios ?? []).join(", ")}
+                        onChange={(e) => {
+                          const tags = parsePortfolios(e.target.value);
+                          editField(index, { portfolios: tags.length ? tags : undefined });
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate">{photo.title}</p>
+                      <p className="truncate text-sm text-[rgba(255,255,255,0.5)]">
+                        {photo.caption || "No caption"}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-[rgba(255,255,255,0.4)]">
+                        {photo.portfolios?.length ? photo.portfolios.join(" · ") : "Uncategorized"}
+                      </p>
+                    </div>
+                  )}
                   <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setEditing(editing === index ? null : index)}
+                      className={`grid size-9 place-items-center rounded-full transition ${editing === index ? "bg-white text-black hover:scale-105" : "bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.14)]"}`}
+                      aria-label={editing === index ? "Done editing" : "Edit"}
+                    >
+                      {editing === index ? <Check className="size-4" /> : <Pencil className="size-4" />}
+                    </button>
                     <button
                       onClick={() => move(index, -1)}
                       disabled={index === 0}

@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { LayoutGrid, LayoutList, X } from "lucide-react";
+import { Folders, LayoutGrid, LayoutList, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
 import { fetchPhotos, staticPhotos, type Photo } from "../photoStore";
+
+const UNCATEGORIZED = "Uncategorized";
+const photoPortfolios = (p: Photo): string[] =>
+  p.portfolios && p.portfolios.length > 0 ? p.portfolios : [UNCATEGORIZED];
 
 const POOL_SIZE = 72;
 const SEED = 0x9e3779b9; // fixed → layout is deterministic and stable across renders
@@ -132,15 +136,33 @@ export default function App() {
       active = false;
     };
   }, []);
-  const imagePool = useMemo(() => buildImagePool(photoList), [photoList]);
+  // Track *hidden* portfolios, not selected ones: empty = everything shows, and a
+  // newly-published portfolio appears by default with no re-sync when photoList loads.
+  const [hidden, setHidden] = useState<Set<string>>(new Set());
+  const [portfoliosOpen, setPortfoliosOpen] = useState(false);
+
+  // Sorted union of every photo's portfolios (Uncategorized included when any photo is unassigned).
+  const portfolioNames = useMemo(() => {
+    const names = new Set<string>();
+    for (const p of photoList) for (const name of photoPortfolios(p)) names.add(name);
+    return [...names].sort((a, b) => a.localeCompare(b));
+  }, [photoList]);
+
+  // A photo shows if at least one of its portfolios is not hidden.
+  const filteredPhotos = useMemo(
+    () => photoList.filter((p) => photoPortfolios(p).some((name) => !hidden.has(name))),
+    [photoList, hidden],
+  );
+
+  const imagePool = useMemo(() => buildImagePool(filteredPhotos), [filteredPhotos]);
   const listPool = useMemo<PortfolioWork[]>(() =>
-    photoList.map((photo, i) => ({
+    filteredPhotos.map((photo, i) => ({
       ...photo,
       alt: photo.alt ?? photo.title,
       span: "",
       id: `list-${photo.title}-${i}`,
     })),
-    [photoList]
+    [filteredPhotos]
   );
   const [view, setView] = useState<"grid" | "list">("grid");
   const [selected, setSelected] = useState<PortfolioWork | null>(null);
@@ -158,6 +180,20 @@ export default function App() {
     setHovered(null);
     setView(v => v === "grid" ? "list" : "grid");
   };
+
+  const togglePortfolio = (name: string) =>
+    setHidden((prev) => {
+      const next = new Set(prev);
+      next.has(name) ? next.delete(name) : next.add(name);
+      return next;
+    });
+
+  useEffect(() => {
+    if (!portfoliosOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setPortfoliosOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [portfoliosOpen]);
 
   // Compute a transform-origin from the tile's position inside the grid so the
   // subtle scale-up always reads as growing *inward* near the edges.
@@ -207,6 +243,26 @@ export default function App() {
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.12))" }} />
           <div className="relative flex items-center gap-3"><span className="text-xl font-medium" style={{ color: "var(--glass-text)", textShadow: "0 1px 8px var(--glass-shadow), 0 0 30px var(--glass-shadow)" }}>Jacky Xue</span></div>
           <div className="relative flex items-center gap-2">
+            {portfolioNames.length > 1 && (
+              <div className="relative">
+                <button onClick={() => setPortfoliosOpen((o) => !o)} className="nav-button-neutral flex items-center justify-center rounded-full p-2 transition" style={{ color: "var(--glass-text)" }} aria-label="Portfolios" aria-expanded={portfoliosOpen}>
+                  <Folders className="size-4" />
+                </button>
+                {portfoliosOpen && (
+                  <>
+                  <div className="fixed inset-0 z-30" onClick={() => setPortfoliosOpen(false)} />
+                  <div className="glass-pane absolute right-0 top-[calc(100%+0.75rem)] z-40 w-56 p-2" style={{ color: "var(--glass-text)" }}>
+                    {portfolioNames.map((name) => (
+                      <label key={name} className="flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-sm transition-colors hover:bg-white/[0.06]">
+                        <input type="checkbox" checked={!hidden.has(name)} onChange={() => togglePortfolio(name)} className="size-4 accent-[var(--primary)]" />
+                        <span className="truncate">{name}</span>
+                      </label>
+                    ))}
+                  </div>
+                  </>
+                )}
+              </div>
+            )}
             <button onClick={toggleView} className="nav-button-neutral flex items-center justify-center rounded-full p-2 transition" style={{ color: "var(--glass-text)" }} aria-label="Toggle view">
               {view === "grid" ? <LayoutGrid className="size-4" /> : <LayoutList className="size-4" />}
             </button>

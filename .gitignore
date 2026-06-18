@@ -9,3 +9,5 @@ coverage/
 *.log
 .npm/
 .pnpm-store/
+Claude.md
+

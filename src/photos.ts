@@ -17,6 +17,8 @@ export type Photo = {
   title: string;
   caption: string;
   alt?: string;
+  // Subportfolios this photo belongs to. Absent/empty → "Uncategorized".
+  portfolios?: string[];
 };
 
 export const photos: Photo[] = [
