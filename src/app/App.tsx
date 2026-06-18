@@ -246,61 +246,61 @@ export default function App() {
   return (
     <main className="h-screen overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
 
-      {/* Outer wrapper — owns fixed positioning and the static border */}
-      <div className="nav-wrap">
-        <nav className="nav-glass flex items-center justify-between px-4 py-3 text-white md:px-6">
-          {/* Dome highlight — convex lens catching light from above */}
-          <div className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255,255,255,0.22) 0%, transparent 70%)" }} />
-          {/* Bottom vignette — shadow inside the dome */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,0,0,0.12))" }} />
-          <div className="relative flex items-center gap-3"><span className="text-xl font-medium" style={{ color: "var(--glass-text)", textShadow: "0 1px 8px var(--glass-shadow), 0 0 30px var(--glass-shadow)" }}>Jacky Xue</span></div>
-          <div className="relative flex items-center gap-2">
-            {portfolioNames.length > 0 && (
-              <button onClick={() => setPortfoliosOpen((o) => !o)} className="nav-button-neutral flex items-center justify-center rounded-full p-2 transition" style={{ color: "var(--glass-text)" }} aria-label="Portfolios" aria-expanded={portfoliosOpen}>
-                <Folders className="size-4" />
-              </button>
-            )}
-            <button onClick={toggleView} className="nav-button-neutral flex items-center justify-center rounded-full p-2 transition" style={{ color: "var(--glass-text)" }} aria-label="Toggle view">
-              {view === "grid" ? <LayoutGrid className="size-4" /> : <LayoutList className="size-4" />}
-            </button>
-            <a href="https://jxue.ca" className="nav-button flex items-center gap-2 rounded-full px-4 py-2 text-sm transition" style={{ color: "var(--glass-text)" }}>Home</a>
-          </div>
-        </nav>
-        {/* Lifted shadow — blurred copy below for the floating 3-D look */}
-        <div className="nav-shadow" />
+      {/* Corner scrim — radial vignette from top-right so controls stay legible over bright sky */}
+      <div
+        className="pointer-events-none fixed right-0 top-0 z-20 h-40 w-80"
+        style={{ background: "radial-gradient(ellipse at 100% 0%, rgba(0,0,0,0.45) 0%, transparent 70%)" }}
+      />
 
-        {/* Panel lives inside nav-wrap (the fixed container) but outside nav-glass
-            so it's not clipped by nav-glass's overflow:hidden pill shape. */}
-        <AnimatePresence>
-          {portfoliosOpen && portfolioNames.length > 0 && (
-            <motion.div
-              key="portfolios-panel"
-              variants={panelVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-              className="glass-pane w-56 origin-top-right p-2"
-              style={{ position: "absolute", top: "calc(100% + 0.5rem)", right: "1px", color: "var(--glass-text)", borderRadius: "1.25rem", zIndex: 40 }}
-            >
-              {portfolioNames.map((name) => {
-                const active = !hidden.has(name);
-                return (
-                  <motion.button
-                    key={name}
-                    variants={panelItemVariants}
-                    onClick={() => togglePortfolio(name)}
-                    aria-pressed={active}
-                    className={`w-full rounded-xl px-3 py-2 text-left text-sm transition-colors ${active ? "bg-white/[0.12] text-white" : "text-white/40 hover:bg-white/[0.06] hover:text-white/70"}`}
-                  >
-                    {name}
-                  </motion.button>
-                );
-              })}
-            </motion.div>
+      {/* Bare floating header — controls float over the scrim */}
+      <header
+        className="fixed left-1/2 top-5 z-30 flex w-[calc(100%-2rem)] max-w-4xl -translate-x-1/2 items-center justify-between text-white"
+        style={{ textShadow: "0 1px 12px rgba(0,0,0,0.35)" }}
+      >
+        <span className="text-xl font-medium">Jacky Xue</span>
+        <div className="relative flex items-center gap-1">
+          {portfolioNames.length > 0 && (
+            <button onClick={() => setPortfoliosOpen((o) => !o)} className="flex items-center justify-center rounded-full p-2 text-white/75 transition hover:text-white" aria-label="Portfolios" aria-expanded={portfoliosOpen}>
+              <Folders className="size-4" />
+            </button>
           )}
-        </AnimatePresence>
-        {portfoliosOpen && <div className="fixed inset-0 z-30" onClick={() => setPortfoliosOpen(false)} />}
-      </div>
+          <button onClick={toggleView} className="flex items-center justify-center rounded-full p-2 text-white/75 transition hover:text-white" aria-label="Toggle view">
+            {view === "grid" ? <LayoutGrid className="size-4" /> : <LayoutList className="size-4" />}
+          </button>
+          <a href="https://jxue.ca" className="rounded-full px-3 py-2 text-sm text-white/75 transition hover:text-white">Home</a>
+
+          {/* Portfolios dropdown — anchored to the control cluster */}
+          <AnimatePresence>
+            {portfoliosOpen && portfolioNames.length > 0 && (
+              <motion.div
+                key="portfolios-panel"
+                variants={panelVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                className="glass-pane w-56 origin-top-right p-2"
+                style={{ position: "absolute", top: "calc(100% + 0.5rem)", right: 0, color: "var(--glass-text)", borderRadius: "1.25rem", zIndex: 40, textShadow: "none" }}
+              >
+                {portfolioNames.map((name) => {
+                  const active = !hidden.has(name);
+                  return (
+                    <motion.button
+                      key={name}
+                      variants={panelItemVariants}
+                      onClick={() => togglePortfolio(name)}
+                      aria-pressed={active}
+                      className={`w-full rounded-xl px-3 py-2 text-left text-sm transition-colors ${active ? "bg-white/[0.12] text-white" : "text-white/40 hover:bg-white/[0.06] hover:text-white/70"}`}
+                    >
+                      {name}
+                    </motion.button>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </header>
+      {portfoliosOpen && <div className="fixed inset-0 z-20" onClick={() => setPortfoliosOpen(false)} />}
 
       <AnimatePresence mode="wait">
         {view === "grid" ? (
@@ -453,65 +453,7 @@ export default function App() {
       <style>{`
         @keyframes drift { from { transform: translateY(0); } to { transform: translateY(-50%); } }
 
-        .nav-wrap {
-          position: fixed;
-          left: 50%;
-          top: 1.25rem;
-          transform: translateX(-50%);
-          z-index: 30;
-          width: calc(100% - 2rem);
-          max-width: 56rem;
-          padding: 1px;
-          border-radius: 9999px;
-          background: var(--glass-border-color);
-        }
-
-        .nav-glass {
-          position: relative;
-          overflow: hidden;
-          border-radius: 9999px;
-          background: var(--glass-fill);
-          backdrop-filter: blur(40px) saturate(180%) brightness(1.06);
-          -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.06);
-          box-shadow:
-            inset 0  1px 0 var(--glass-inset-hi),
-            inset 0 -1px 0 var(--glass-inset-lo),
-            0 8px 48px var(--glass-shadow);
-        }
-
-        /* Nav button — glass effect with green tint, border adapts to mode */
-        .nav-button {
-          background: linear-gradient(135deg, rgba(24,100,64,0.15), rgba(24,100,64,0.08));
-          backdrop-filter: blur(20px) saturate(160%);
-          -webkit-backdrop-filter: blur(20px) saturate(160%);
-          border: 1px solid rgba(24,100,64,0.35);
-          box-shadow:
-            inset 0  1px 0 var(--glass-inset-hi),
-            inset 0 -1px 0 var(--glass-inset-lo),
-            0 4px 16px var(--glass-shadow);
-        }
-        .nav-button:hover {
-          background: linear-gradient(135deg, rgba(24,100,64,0.25), rgba(24,100,64,0.15));
-          border-color: rgba(24,100,64,0.5);
-        }
-
-        /* Nav button neutral — glass effect without green tint */
-        .nav-button-neutral {
-          background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
-          backdrop-filter: blur(20px) saturate(160%);
-          -webkit-backdrop-filter: blur(20px) saturate(160%);
-          border: 1px solid var(--glass-border-color);
-          box-shadow:
-            inset 0  1px 0 var(--glass-inset-hi),
-            inset 0 -1px 0 var(--glass-inset-lo),
-            0 4px 16px var(--glass-shadow);
-        }
-        .nav-button-neutral:hover {
-          background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
-          border-color: var(--glass-inset-hi);
-        }
-
-        /* Caption / list pane — glass adapts to light and dark */
+        /* Caption / list pane / portfolios dropdown — glass adapts to light and dark */
         .glass-pane {
           position: relative;
           border-radius: 1.7rem;
@@ -523,17 +465,6 @@ export default function App() {
             inset 0  1px 0 var(--glass-inset-hi),
             inset 0 -1px 0 var(--glass-inset-lo),
             0 8px 48px var(--glass-shadow);
-        }
-
-        .nav-shadow {
-          position: absolute;
-          inset: 6px;
-          border-radius: 9999px;
-          background: rgba(0,0,0,0.55);
-          filter: blur(20px);
-          transform: translateY(14px) scaleX(0.94);
-          z-index: -1;
-          pointer-events: none;
         }
       `}</style>
       <SpeedInsights />
