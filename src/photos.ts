@@ -17,6 +17,7 @@ export type Photo = {
   title: string;
   caption: string;
   alt?: string;
+  location?: string;
   // Subportfolios this photo belongs to. Absent/empty → "Uncategorized".
   portfolios?: string[];
 };

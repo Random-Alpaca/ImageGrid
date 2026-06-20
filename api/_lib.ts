@@ -1,6 +1,6 @@
 import { Redis } from "@upstash/redis";
 
-export type Photo = { src: string; title: string; caption: string; alt?: string };
+export type Photo = { src: string; title: string; caption: string; alt?: string; location?: string; portfolios?: string[] };
 
 export const PHOTOS_KEY = "portfolio:photos";
 

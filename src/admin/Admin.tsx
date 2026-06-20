@@ -9,6 +9,7 @@ import {
   Lock,
   Pencil,
   Save,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 import { Analytics } from "@vercel/analytics/react";
@@ -43,6 +44,7 @@ export const photos: Photo[] = [`;
         `    caption: ${JSON.stringify(p.caption)},`,
       ];
       if (p.alt) lines.push(`    alt: ${JSON.stringify(p.alt)},`);
+      if (p.location) lines.push(`    location: ${JSON.stringify(p.location)},`);
       if (p.portfolios && p.portfolios.length) lines.push(`    portfolios: ${JSON.stringify(p.portfolios)},`);
       lines.push("  },");
       return lines.join("\n");
@@ -77,6 +79,32 @@ export default function Admin() {
   const [portfolios, setPortfolios] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [editing, setEditing] = useState<number | null>(null);
+
+  // AI generation
+  const [generating, setGenerating] = useState<number | null>(null);
+
+  const generate = async (index: number) => {
+    const photo = list[index];
+    if (!photo?.src) return;
+    setGenerating(index);
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ src: photo.src }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        editField(index, {
+          ...(data.title ? { title: data.title } : {}),
+          ...(data.caption ? { caption: data.caption } : {}),
+          ...(data.location ? { location: data.location } : {}),
+        });
+      }
+    } finally {
+      setGenerating(null);
+    }
+  };
 
   // Save / export
   const [saving, setSaving] = useState(false);
@@ -386,6 +414,7 @@ export default function Admin() {
                       <input className={inputClass} placeholder="Image URL" value={photo.src} onChange={(e) => editField(index, { src: e.target.value })} />
                       <input className={inputClass} placeholder="Title" value={photo.title} onChange={(e) => editField(index, { title: e.target.value })} />
                       <textarea className={`${inputClass} min-h-20 resize-y`} placeholder="Caption" value={photo.caption} onChange={(e) => editField(index, { caption: e.target.value })} />
+                      <input className={inputClass} placeholder="Location (e.g. Kyoto, Japan)" value={photo.location ?? ""} onChange={(e) => editField(index, { location: e.target.value || undefined })} />
                       <input className={inputClass} placeholder="Alt text (optional)" value={photo.alt ?? ""} onChange={(e) => editField(index, { alt: e.target.value || undefined })} />
                       <textarea
                         className={`${inputClass} min-h-20 resize-y`}
@@ -396,6 +425,14 @@ export default function Admin() {
                           editField(index, { portfolios: tags.length ? tags : undefined });
                         }}
                       />
+                      <button
+                        onClick={() => generate(index)}
+                        disabled={generating === index}
+                        className="flex items-center gap-2 justify-self-start rounded-full border border-[rgba(255,255,255,0.2)] px-4 py-2 text-sm transition hover:bg-[rgba(255,255,255,0.08)] disabled:opacity-50"
+                      >
+                        {generating === index ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+                        {generating === index ? "Generating…" : "Generate with Gemma"}
+                      </button>
                     </div>
                   ) : (
                     <div className="min-w-0 flex-1">
@@ -404,7 +441,7 @@ export default function Admin() {
                         {photo.caption || "No caption"}
                       </p>
                       <p className="mt-1 truncate text-xs text-[rgba(255,255,255,0.4)]">
-                        {photo.portfolios?.length ? photo.portfolios.join(" · ") : "Uncategorized"}
+                        {photo.location ? `📍 ${photo.location} · ` : ""}{photo.portfolios?.length ? photo.portfolios.join(" · ") : "Uncategorized"}
                       </p>
                     </div>
                   )}

@@ -44,6 +44,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         title: String(p.title),
         caption: String(p.caption ?? ""),
         ...(p.alt ? { alt: String(p.alt) } : {}),
+        ...(p.location ? { location: String(p.location) } : {}),
+        ...(Array.isArray(p.portfolios) && p.portfolios.length
+          ? { portfolios: p.portfolios.filter((s): s is string => typeof s === "string") }
+          : {}),
       }));
 
       await redis.set(PHOTOS_KEY, clean);
