@@ -205,12 +205,23 @@ export default function App() {
         if (!isNaN(d.getTime())) date = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", day: "numeric" }).format(d);
       }
 
+      const toTwoSigFigs = (val: number): number => {
+        if (typeof val !== "number" || isNaN(val)) return val;
+        return Number(val.toPrecision(2));
+      };
+
       const expParts: string[] = [];
       const fl = raw.FocalLengthIn35mmFilm ?? raw.FocalLength;
-      if (fl) expParts.push(`${fl}mm`);
-      if (raw.FNumber) expParts.push(`f/${raw.FNumber}`);
-      if (raw.ExposureTime) expParts.push(raw.ExposureTime < 1 ? `1/${Math.round(1 / raw.ExposureTime)}s` : `${raw.ExposureTime}s`);
-      if (raw.ISO) expParts.push(`ISO ${raw.ISO}`);
+      if (fl) expParts.push(`${toTwoSigFigs(fl)}mm`);
+      if (raw.FNumber) expParts.push(`f/${toTwoSigFigs(raw.FNumber)}`);
+      if (raw.ExposureTime) {
+        if (raw.ExposureTime < 1) {
+          expParts.push(`1/${toTwoSigFigs(Math.round(1 / raw.ExposureTime))}s`);
+        } else {
+          expParts.push(`${toTwoSigFigs(raw.ExposureTime)}s`);
+        }
+      }
+      if (raw.ISO) expParts.push(`ISO ${toTwoSigFigs(raw.ISO)}`);
       const exposure = expParts.length ? expParts.join(" · ") : undefined;
 
       // Prefer the manually-set location from the Photo object; fall back to GPS reverse-geocode.
@@ -490,7 +501,7 @@ export default function App() {
                       <dl className="mt-7 border-t border-white/10 pt-6 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-xs">
                         {exif.camera && <><dt className="text-white/40 pt-px">Camera</dt><dd className="text-white/70">{exif.camera}</dd></>}
                         {exif.lens && <><dt className="text-white/40 pt-px">Lens</dt><dd className="text-white/70">{exif.lens}</dd></>}
-                        {exif.exposure && <><dt className="text-white/40 pt-px">Exposure</dt><dd className="text-white/70">{exif.exposure}</dd></>}
+                        {exif.exposure && <><dt className="text-white/40 pt-px">Exposure Details</dt><dd className="text-white/70">{exif.exposure}</dd></>}
                         {exif.date && <><dt className="text-white/40 pt-px">Date</dt><dd className="text-white/70">{exif.date}</dd></>}
                         {exif.location && <><dt className="text-white/40 pt-px">Location</dt><dd className="text-white/70">{exif.location}</dd></>}
                       </dl>
