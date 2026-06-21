@@ -259,6 +259,11 @@ export default function App() {
 
   const togglePortfolio = (name: string) =>
     setHidden((prev) => {
+      if (prev.size === 0) {
+        const next = new Set(portfolioNames);
+        next.delete(name);
+        return next;
+      }
       const next = new Set(prev);
       next.has(name) ? next.delete(name) : next.add(name);
       return next;
@@ -269,6 +274,36 @@ export default function App() {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setPortfoliosOpen(false);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, [portfoliosOpen]);
+
+  useEffect(() => {
+    if (!portfoliosOpen) return;
+    const handleMouseMove = (e: MouseEvent) => {
+      const headerWidth = 896; // max-w-4xl
+      const padding = 16; // inset-x-4
+      const buffer = 120; // horizontal buffer
+
+      const screenWidth = window.innerWidth;
+      const leftBound = Math.max(padding, (screenWidth - headerWidth) / 2);
+      const rightBound = screenWidth - leftBound;
+
+      const isBelowGradient = e.clientY > 285;
+      const isTooFarLeft = e.clientX < leftBound - buffer;
+      const isTooFarRight = e.clientX > rightBound + buffer;
+
+      if (isBelowGradient || isTooFarLeft || isTooFarRight) {
+        setPortfoliosOpen(false);
+      }
+    };
+
+    const handleMouseLeaveDoc = () => setPortfoliosOpen(false);
+
+    window.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseleave", handleMouseLeaveDoc);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseleave", handleMouseLeaveDoc);
+    };
   }, [portfoliosOpen]);
 
   // Compute a transform-origin from the tile's position inside the grid so the
@@ -295,54 +330,79 @@ export default function App() {
   return (
     <main className="h-screen overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
 
+      {/* Global top gradient scrim */}
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-20 flex flex-col">
+        <motion.div
+          className="bg-black w-full"
+          initial={{ height: 55 }}
+          animate={{ height: portfoliosOpen ? 200 : 55 }}
+          transition={{ duration: portfoliosOpen ? 0.3 : 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+        />
+        <div className="h-[85px] w-full bg-gradient-to-b from-black to-transparent" />
+      </div>
 
-      {/* Bare floating header — controls float over the scrim */}
+      {/* Apple-inspired expanding nav bar */}
       <header
-        className="fixed inset-x-4 top-5 z-30 mx-auto flex max-w-4xl items-center justify-between text-white"
+        className="fixed inset-x-4 top-5 z-30 mx-auto max-w-4xl text-white"
         style={{ textShadow: "0 1px 12px rgba(0,0,0,0.35)" }}
       >
-        <span className="text-xl font-medium">Jacky Xue</span>
-        <div className="relative flex items-center gap-1">
-          {portfolioNames.length > 0 && (
-            <button onClick={() => setPortfoliosOpen((o) => !o)} className="flex items-center justify-center rounded-full p-2 text-white/75 transition hover:text-white" aria-label="Portfolios" aria-expanded={portfoliosOpen}>
-              <Folders className="size-4" />
-            </button>
-          )}
-          <button onClick={toggleView} className="flex items-center justify-center rounded-full p-2 text-white/75 transition hover:text-white" aria-label="Toggle view">
-            {view === "grid" ? <LayoutGrid className="size-4" /> : <LayoutList className="size-4" />}
-          </button>
-          <a href="https://jxue.ca" className="rounded-full px-3 py-2 text-sm text-white/75 transition hover:text-white">Home</a>
-
-          {/* Portfolios dropdown — anchored to the control cluster */}
-          <AnimatePresence>
-            {portfoliosOpen && portfolioNames.length > 0 && (
-              <motion.div
-                key="portfolios-panel"
-                variants={panelVariants}
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                className="glass-pane w-56 origin-top-right p-2"
-                style={{ position: "absolute", top: "calc(100% + 0.5rem)", right: 0, color: "var(--glass-text)", zIndex: 40, textShadow: "none" }}
-              >
-                {portfolioNames.map((name) => {
-                  const active = !hidden.has(name);
-                  return (
-                    <motion.button
-                      key={name}
-                      variants={panelItemVariants}
-                      onClick={() => togglePortfolio(name)}
-                      aria-pressed={active}
-                      className={`w-full px-3 py-2 text-left text-sm transition-colors ${active ? "bg-white/[0.12] text-white" : "text-white/40 hover:bg-white/[0.06] hover:text-white/70"}`}
-                    >
-                      {name}
-                    </motion.button>
-                  );
-                })}
-              </motion.div>
+        <div className="flex items-center justify-between">
+          <span className="text-xl font-medium">Jacky Xue</span>
+          <div className="flex items-center gap-1">
+            {portfolioNames.length > 0 && (
+              <button onMouseEnter={() => setPortfoliosOpen(true)} className="flex items-center justify-center rounded-full p-2 text-white/75 transition hover:text-white" aria-label="Categories" aria-expanded={portfoliosOpen}>
+                <Folders className="size-4" />
+              </button>
             )}
-          </AnimatePresence>
+            <button onClick={toggleView} className="flex items-center justify-center rounded-full p-2 text-white/75 transition hover:text-white" aria-label="Toggle view">
+              {view === "grid" ? <LayoutGrid className="size-4" /> : <LayoutList className="size-4" />}
+            </button>
+            <a href="https://jxue.ca" className="rounded-full px-3 py-2 text-sm text-white/75 transition hover:text-white">Home</a>
+          </div>
         </div>
+
+        {/* Categories panel — expands downward from the nav */}
+        <AnimatePresence>
+          {portfoliosOpen && portfolioNames.length > 0 && (
+            <motion.div
+              key="categories-panel"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1, transition: { height: { duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }, opacity: { duration: 0.2, ease: [0.2, 0.8, 0.2, 1] } } }}
+              exit={{ height: 0, opacity: 0, transition: { height: { duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }, opacity: { duration: 0.14, ease: [0.2, 0.8, 0.2, 1] } } }}
+              className="overflow-hidden"
+              style={{ textShadow: "none" }}
+            >
+              <div className="pb-3 pt-4">
+                <motion.h4
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0, transition: { duration: 0.2, delay: 0.06, ease: [0.2, 0.8, 0.2, 1] } }}
+                  exit={{ opacity: 0, y: -4, transition: { duration: 0.15, ease: [0.2, 0.8, 0.2, 1] } }}
+                  className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/40"
+                >
+                  Categories
+                </motion.h4>
+                <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                  {portfolioNames.map((name, i) => {
+                    const active = !hidden.has(name);
+                    return (
+                      <motion.button
+                        key={name}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0, transition: { duration: 0.22, delay: 0.04 + i * 0.035, ease: [0.2, 0.8, 0.2, 1] } }}
+                        exit={{ opacity: 0, y: -6, transition: { duration: 0.15, ease: [0.2, 0.8, 0.2, 1] } }}
+                        onClick={() => togglePortfolio(name)}
+                        aria-pressed={active}
+                        className={`py-1 text-sm transition-colors duration-200 ${active ? "text-white" : "text-white/35 hover:text-white/55"}`}
+                      >
+                        {name}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
       {portfoliosOpen && <div className="fixed inset-0 z-20" onClick={() => setPortfoliosOpen(false)} />}
 
@@ -357,7 +417,6 @@ export default function App() {
             transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
           >
             <div className="relative flex-1 overflow-hidden">
-              <div className="pointer-events-none absolute inset-x-0 top-0 z-20" style={{ height: 140, background: "linear-gradient(to bottom, black 0%, black 55px, transparent 140px)" }} />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28 bg-gradient-to-t from-black to-transparent" />
               <div
                 className="animate-[drift_120s_linear_infinite] px-4 md:px-8"
