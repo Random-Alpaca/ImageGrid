@@ -36,6 +36,7 @@ export function NavigationHeader({
             {portfolioNames.length > 0 && (
               <button
                 onMouseEnter={() => setPortfoliosOpen(true)}
+                onClick={() => setPortfoliosOpen(!portfoliosOpen)}
                 className="flex items-center justify-center rounded-full p-2 text-white/75 transition hover:text-white"
                 aria-label="Categories"
                 aria-expanded={portfoliosOpen}

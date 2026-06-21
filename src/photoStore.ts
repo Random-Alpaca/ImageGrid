@@ -9,7 +9,7 @@ export { staticPhotos };
 // seed list in photos.ts so the site always renders.
 export async function fetchPhotos(): Promise<Photo[]> {
   try {
-    const res = await fetch("/api/photos", { cache: "no-store" });
+    const res = await fetch("/api/photos");
     if (!res.ok) return staticPhotos;
     const data = await res.json();
     const list: Photo[] = Array.isArray(data?.photos) ? data.photos : [];

@@ -23,7 +23,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === "GET") {
       const photos = (await redis.get<Photo[]>(PHOTOS_KEY)) ?? [];
-      res.setHeader("Cache-Control", "no-store");
+      res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=86400");
       return res.status(200).json({ photos });
     }
 

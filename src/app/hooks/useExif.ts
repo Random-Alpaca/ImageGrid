@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import exifr from "exifr";
 import type { ExifInfo } from "../types";
 import type { PortfolioWork } from "../types";
 
@@ -42,7 +41,7 @@ export function useExif(selected: PortfolioWork | null): ExifInfo | null {
         .catch(() => null);
 
     Promise.resolve()
-      .then(() => exifr.parse(selected.src, PICK).catch(() => null))
+      .then(() => import("exifr").then((m) => m.default.parse(selected.src, PICK)).catch(() => null))
       .then((direct) => direct ?? parseViaApi())
       .then(async (raw) => {
         if (ctrl.signal.aborted || !raw) return;

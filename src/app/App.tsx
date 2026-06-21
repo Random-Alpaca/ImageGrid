@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
@@ -25,16 +25,16 @@ export default function App() {
 
   const exif = useExif(selected);
 
-  const toggleView = () => {
+  const toggleView = useCallback(() => {
     setSelected(null);
     setIsClosing(false);
     setView((v) => (v === "grid" ? "list" : "grid"));
-  };
+  }, []);
 
-  const openModal = (work: PortfolioWork) => {
+  const openModal = useCallback((work: PortfolioWork) => {
     setIsClosing(false);
     setSelected(work);
-  };
+  }, []);
 
   const closeModal = () => {
     if (!selected || isClosing) return;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { motion } from "motion/react";
 import { EXPAND } from "../lib/imagePool";
 import { modalTransition } from "../lib/animations";
@@ -8,16 +8,16 @@ interface GridTileProps {
   work: PortfolioWork;
   isHovered: boolean;
   isDimmed: boolean;
-  onHover: (e: React.MouseEvent<HTMLElement>, id: string) => void;
+  onHover: (id: string) => void;
   onUnhover: () => void;
-  onClick: () => void;
+  onSelect: (work: PortfolioWork) => void;
 }
 
 /**
  * A single grid tile that expands into the gap on hover, revealing more of
  * the image without scaling. The expansion respects grid edges.
  */
-export function GridTile({ work, isHovered, isDimmed, onHover, onUnhover, onClick }: GridTileProps) {
+export const GridTile = memo(function GridTile({ work, isHovered, isDimmed, onHover, onUnhover, onSelect }: GridTileProps) {
   const [expandEdges, setExpandEdges] = useState({ left: true, right: true });
 
   const handleEnter = (e: React.MouseEvent<HTMLElement>) => {
@@ -27,7 +27,7 @@ export function GridTile({ work, isHovered, isDimmed, onHover, onUnhover, onClic
       left: !gb || rect.left > gb.left + 2,
       right: !gb || rect.right < gb.right - 2,
     });
-    onHover(e, work.id);
+    onHover(work.id);
   };
 
   return (
@@ -37,7 +37,7 @@ export function GridTile({ work, isHovered, isDimmed, onHover, onUnhover, onClic
       onMouseLeave={onUnhover}
       onFocus={handleEnter}
       onBlur={onUnhover}
-      onClick={onClick}
+      onClick={() => onSelect(work)}
       style={{ zIndex: isHovered ? 20 : 1 }}
       className={`${work.span} group/card relative min-h-0 bg-muted text-left focus:outline-none focus:ring-2 focus:ring-primary`}
     >
@@ -70,6 +70,7 @@ export function GridTile({ work, isHovered, isDimmed, onHover, onUnhover, onClic
             layoutId={`portfolio-image-${work.id}`}
             src={work.src}
             alt={work.alt}
+            loading="lazy"
             className="size-full object-cover"
             transition={modalTransition}
           />
@@ -86,4 +87,4 @@ export function GridTile({ work, isHovered, isDimmed, onHover, onUnhover, onClic
       </div>
     </motion.button>
   );
-}
+});

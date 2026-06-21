@@ -18,6 +18,7 @@ export function ListItem({ item, onClick }: ListItemProps) {
             layoutId={`portfolio-image-${item.id}`}
             src={item.src}
             alt={item.alt}
+            loading="lazy"
             className="size-full object-cover"
             transition={modalTransition}
           />
