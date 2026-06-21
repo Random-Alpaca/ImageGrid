@@ -438,7 +438,11 @@ export default function Admin() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate">{photo.title}</p>
                       <p className="truncate text-sm text-[rgba(255,255,255,0.5)]">
-                        {photo.caption || "No caption"}
+                        {photo.caption
+                          ? photo.caption.length > 100
+                            ? photo.caption.slice(0, 100) + "..."
+                            : photo.caption
+                          : "No caption"}
                       </p>
                       <p className="mt-1 truncate text-xs text-[rgba(255,255,255,0.4)]">
                         {photo.location ? `📍 ${photo.location} · ` : ""}{photo.portfolios?.length ? photo.portfolios.join(" · ") : "Uncategorized"}
