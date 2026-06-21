@@ -295,6 +295,16 @@ export default function App() {
   return (
     <main className="h-screen overflow-hidden bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
 
+      {/* Global top gradient scrim */}
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-20 flex flex-col">
+        <motion.div
+          className="bg-black w-full"
+          initial={{ height: 55 }}
+          animate={{ height: portfoliosOpen ? 200 : 55 }}
+          transition={{ duration: portfoliosOpen ? 0.3 : 0.22, ease: [0.2, 0.8, 0.2, 1] }}
+        />
+        <div className="h-[85px] w-full bg-gradient-to-b from-black to-transparent" />
+      </div>
 
       {/* Apple-inspired expanding nav bar */}
       <header
@@ -332,7 +342,7 @@ export default function App() {
                 <motion.h4
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0, transition: { duration: 0.2, delay: 0.06, ease: [0.2, 0.8, 0.2, 1] } }}
-                  exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                  exit={{ opacity: 0, y: -4, transition: { duration: 0.15, ease: [0.2, 0.8, 0.2, 1] } }}
                   className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/40"
                 >
                   Categories
@@ -345,7 +355,7 @@ export default function App() {
                         key={name}
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0, transition: { duration: 0.22, delay: 0.04 + i * 0.035, ease: [0.2, 0.8, 0.2, 1] } }}
-                        exit={{ opacity: 0, transition: { duration: 0.1 } }}
+                        exit={{ opacity: 0, y: -6, transition: { duration: 0.15, ease: [0.2, 0.8, 0.2, 1] } }}
                         onClick={() => togglePortfolio(name)}
                         aria-pressed={active}
                         className={`py-1 text-sm transition-colors duration-200 ${active ? "text-white" : "text-white/35 hover:text-white/55"}`}
@@ -373,7 +383,6 @@ export default function App() {
             transition={{ duration: 0.25, ease: [0.2, 0.8, 0.2, 1] }}
           >
             <div className="relative flex-1 overflow-hidden">
-              <div className="pointer-events-none absolute inset-x-0 top-0 z-20" style={{ height: 140, background: "linear-gradient(to bottom, black 0%, black 55px, transparent 140px)" }} />
               <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28 bg-gradient-to-t from-black to-transparent" />
               <div
                 className="animate-[drift_120s_linear_infinite] px-4 md:px-8"
