@@ -259,6 +259,11 @@ export default function App() {
 
   const togglePortfolio = (name: string) =>
     setHidden((prev) => {
+      if (prev.size === 0) {
+        const next = new Set(portfolioNames);
+        next.delete(name);
+        return next;
+      }
       const next = new Set(prev);
       next.has(name) ? next.delete(name) : next.add(name);
       return next;
