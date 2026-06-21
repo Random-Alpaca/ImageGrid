@@ -36,14 +36,14 @@ request carries the correct passphrase. To enable it:
 2. **Set the passphrase:** Project → **Settings → Environment Variables** → add
    `ADMIN_PASSWORD` = your chosen passphrase. ⚠️ Do **not** prefix it with
    `VITE_` — that would bundle it into the client. It must stay server-only.
-3. **Redeploy.**
+3. **Optional AI Feature:** add a Google AI Studio key to auto-generate captions from time-to-time if you want. 
+4. **Redeploy.**
 
 How auth works: the passphrase is sent over HTTPS in an `Authorization: Bearer`
 header and compared on the server (constant-time) against `ADMIN_PASSWORD`. It is
 never stored in the browser or shipped in the JS bundle. `GET /api/photos` is
 public (the gallery needs it); `PUT /api/photos` and `POST /api/verify` require
 the passphrase.
-
 
 
 ## Deployment Steps
