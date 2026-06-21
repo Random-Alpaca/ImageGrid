@@ -1,7 +1,7 @@
 # Infinite Tiling Photo Portfolio
 
 A Vite + React + Tailwind portfolio with an infinite drifting image grid. Links
-back to [jxue.ca](https://jxue.ca). Photos are managed through a passphrase-gated
+back to a home page. Photos are managed through a passphrase-gated
 admin page backed by a small Vercel serverless API + Upstash Redis.
 
 ## Add / manage photos
