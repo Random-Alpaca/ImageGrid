@@ -276,6 +276,36 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [portfoliosOpen]);
 
+  useEffect(() => {
+    if (!portfoliosOpen) return;
+    const handleMouseMove = (e: MouseEvent) => {
+      const headerWidth = 896; // max-w-4xl
+      const padding = 16; // inset-x-4
+      const buffer = 120; // horizontal buffer
+
+      const screenWidth = window.innerWidth;
+      const leftBound = Math.max(padding, (screenWidth - headerWidth) / 2);
+      const rightBound = screenWidth - leftBound;
+
+      const isBelowGradient = e.clientY > 285;
+      const isTooFarLeft = e.clientX < leftBound - buffer;
+      const isTooFarRight = e.clientX > rightBound + buffer;
+
+      if (isBelowGradient || isTooFarLeft || isTooFarRight) {
+        setPortfoliosOpen(false);
+      }
+    };
+
+    const handleMouseLeaveDoc = () => setPortfoliosOpen(false);
+
+    window.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseleave", handleMouseLeaveDoc);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseleave", handleMouseLeaveDoc);
+    };
+  }, [portfoliosOpen]);
+
   // Compute a transform-origin from the tile's position inside the grid so the
   // subtle scale-up always reads as growing *inward* near the edges.
   const openModal = (work: PortfolioWork) => {
@@ -315,7 +345,6 @@ export default function App() {
       <header
         className="fixed inset-x-4 top-5 z-30 mx-auto max-w-4xl text-white"
         style={{ textShadow: "0 1px 12px rgba(0,0,0,0.35)" }}
-        onMouseLeave={() => setPortfoliosOpen(false)}
       >
         <div className="flex items-center justify-between">
           <span className="text-xl font-medium">Jacky Xue</span>
