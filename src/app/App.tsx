@@ -391,13 +391,22 @@ export default function App() {
                             transition: "top 0.35s cubic-bezier(0.2,0.8,0.2,1), right 0.35s cubic-bezier(0.2,0.8,0.2,1), bottom 0.35s cubic-bezier(0.2,0.8,0.2,1), left 0.35s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.35s cubic-bezier(0.2,0.8,0.2,1)",
                           }}
                         >
-                          <motion.img
-                            layoutId={`portfolio-image-${work.id}`}
-                            src={work.src}
-                            alt={work.alt}
-                            className="size-full object-cover"
-                            transition={modalTransition}
-                          />
+                          <div
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              transform: isExpanded ? 'scale(1)' : 'scale(1.12)',
+                              transition: 'transform 0.35s cubic-bezier(0.2,0.8,0.2,1)',
+                            }}
+                          >
+                            <motion.img
+                              layoutId={`portfolio-image-${work.id}`}
+                              src={work.src}
+                              alt={work.alt}
+                              className="size-full object-cover"
+                              transition={modalTransition}
+                            />
+                          </div>
                           <div
                             className="absolute inset-0 transition-opacity duration-500 ease-[cubic-bezier(.2,.8,.2,1)]"
                             style={{ opacity: isDimmed ? 0.55 : 0, background: "var(--dim-overlay)" }}
