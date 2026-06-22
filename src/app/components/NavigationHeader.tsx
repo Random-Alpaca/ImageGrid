@@ -6,6 +6,8 @@ interface NavigationHeaderProps {
   hidden: Set<string>;
   portfoliosOpen: boolean;
   setPortfoliosOpen: (open: boolean) => void;
+  openOnHover: () => void;
+  toggleOnClick: () => void;
   togglePortfolio: (name: string) => void;
   view: "grid" | "list";
   onToggleView: () => void;
@@ -20,6 +22,8 @@ export function NavigationHeader({
   hidden,
   portfoliosOpen,
   setPortfoliosOpen,
+  openOnHover,
+  toggleOnClick,
   togglePortfolio,
   view,
   onToggleView,
@@ -35,8 +39,8 @@ export function NavigationHeader({
           <div className="flex items-center gap-1">
             {portfolioNames.length > 0 && (
               <button
-                onMouseEnter={() => setPortfoliosOpen(true)}
-                onClick={() => setPortfoliosOpen(!portfoliosOpen)}
+                onMouseEnter={openOnHover}
+                onClick={toggleOnClick}
                 className="flex items-center justify-center rounded-full p-2 text-white/75 transition hover:text-white"
                 aria-label="Categories"
                 aria-expanded={portfoliosOpen}

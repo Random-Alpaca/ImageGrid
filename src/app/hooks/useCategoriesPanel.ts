@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 /**
  * Manages the categories dropdown panel:
@@ -8,6 +8,26 @@ import { useEffect, useState } from "react";
  */
 export function useCategoriesPanel() {
   const [portfoliosOpen, setPortfoliosOpen] = useState(false);
+  const hoverOpenTimeRef = useRef<number>(0);
+
+  const openOnHover = () => {
+    if (!portfoliosOpen) {
+      hoverOpenTimeRef.current = Date.now();
+      setPortfoliosOpen(true);
+    }
+  };
+
+  const toggleOnClick = () => {
+    if (portfoliosOpen) {
+      const timeSinceHover = Date.now() - hoverOpenTimeRef.current;
+      if (timeSinceHover < 1000) {
+        return;
+      }
+      setPortfoliosOpen(false);
+    } else {
+      setPortfoliosOpen(true);
+    }
+  };
 
   // Escape key closes the panel.
   useEffect(() => {
@@ -50,5 +70,5 @@ export function useCategoriesPanel() {
     };
   }, [portfoliosOpen]);
 
-  return { portfoliosOpen, setPortfoliosOpen };
+  return { portfoliosOpen, setPortfoliosOpen, openOnHover, toggleOnClick };
 }

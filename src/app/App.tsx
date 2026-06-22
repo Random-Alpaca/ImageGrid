@@ -17,7 +17,7 @@ import type { PortfolioWork } from "./types";
 
 export default function App() {
   const { portfolioNames, hidden, imagePool, listPool, togglePortfolio } = usePhotos();
-  const { portfoliosOpen, setPortfoliosOpen } = useCategoriesPanel();
+  const { portfoliosOpen, setPortfoliosOpen, openOnHover, toggleOnClick } = useCategoriesPanel();
 
   const [view, setView] = useState<"grid" | "list">("grid");
   const [selected, setSelected] = useState<PortfolioWork | null>(null);
@@ -56,6 +56,8 @@ export default function App() {
         hidden={hidden}
         portfoliosOpen={portfoliosOpen}
         setPortfoliosOpen={setPortfoliosOpen}
+        openOnHover={openOnHover}
+        toggleOnClick={toggleOnClick}
         togglePortfolio={togglePortfolio}
         view={view}
         onToggleView={toggleView}
