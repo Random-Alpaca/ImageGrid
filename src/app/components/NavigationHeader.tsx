@@ -133,9 +133,8 @@ export function NavigationHeader({
                         }}
                         onClick={() => togglePortfolio(name)}
                         aria-pressed={active}
-                        className={`py-1 text-sm transition-colors duration-200 ${
-                          active ? "text-white" : "text-white/35 hover:text-white/55"
-                        }`}
+                        className={`py-1 text-sm transition-colors duration-200 ${active ? "text-white" : "text-white/35 hover:text-white/55"
+                          }`}
                       >
                         {name}
                       </motion.button>
