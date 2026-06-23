@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
@@ -17,7 +17,7 @@ import type { PortfolioWork } from "./types";
 
 export default function App() {
   const { portfolioNames, hidden, imagePool, listPool, togglePortfolio } = usePhotos();
-  const { portfoliosOpen, setPortfoliosOpen } = useCategoriesPanel();
+  const { portfoliosOpen, setPortfoliosOpen, openOnHover, toggleOnClick } = useCategoriesPanel();
 
   const [view, setView] = useState<"grid" | "list">("grid");
   const [selected, setSelected] = useState<PortfolioWork | null>(null);
@@ -25,16 +25,16 @@ export default function App() {
 
   const exif = useExif(selected);
 
-  const toggleView = () => {
+  const toggleView = useCallback(() => {
     setSelected(null);
     setIsClosing(false);
     setView((v) => (v === "grid" ? "list" : "grid"));
-  };
+  }, []);
 
-  const openModal = (work: PortfolioWork) => {
+  const openModal = useCallback((work: PortfolioWork) => {
     setIsClosing(false);
     setSelected(work);
-  };
+  }, []);
 
   const closeModal = () => {
     if (!selected || isClosing) return;
@@ -56,6 +56,8 @@ export default function App() {
         hidden={hidden}
         portfoliosOpen={portfoliosOpen}
         setPortfoliosOpen={setPortfoliosOpen}
+        openOnHover={openOnHover}
+        toggleOnClick={toggleOnClick}
         togglePortfolio={togglePortfolio}
         view={view}
         onToggleView={toggleView}

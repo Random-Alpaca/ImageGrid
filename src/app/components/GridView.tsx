@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { motion } from "motion/react";
 import { GridTile } from "./GridTile";
 import type { PortfolioWork } from "../types";
@@ -18,6 +18,8 @@ export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
 
   // Pause the drift when a tile is hovered.
   const effectivePaused = isPaused || hovered !== null;
+
+  const handleUnhover = useCallback(() => setHovered(null), []);
 
   return (
     <motion.section
@@ -48,9 +50,9 @@ export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
                 work={work}
                 isHovered={hovered === work.id}
                 isDimmed={hovered !== null && hovered !== work.id}
-                onHover={(_e, id) => setHovered(id)}
-                onUnhover={() => setHovered(null)}
-                onClick={() => onSelect(work)}
+                onHover={setHovered}
+                onUnhover={handleUnhover}
+                onSelect={onSelect}
               />
             ))}
           </div>

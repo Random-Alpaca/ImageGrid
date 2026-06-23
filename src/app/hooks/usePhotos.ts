@@ -67,6 +67,9 @@ export function usePhotos() {
       }
       const next = new Set(prev);
       next.has(name) ? next.delete(name) : next.add(name);
+      if (next.size === portfolioNames.length) {
+        return new Set();
+      }
       return next;
     });
 

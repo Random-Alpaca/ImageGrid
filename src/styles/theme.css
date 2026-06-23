@@ -1,25 +1,39 @@
 @custom-variant dark (@media (prefers-color-scheme: dark));
 
-/* OS-based font overrides — data-os is set by the inline script in index.html */
 :root[data-os="apple"] {
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
-  --font-serif: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
-  --font-mono: "SF Mono", ui-monospace, monospace;
+  --font-sans: "Geist",
+  -apple-system,
+  BlinkMacSystemFont,
+  "SF Pro Display",
+  "SF Pro Text",
+  sans-serif;
+  --font-serif: "Geist",
+  -apple-system,
+  BlinkMacSystemFont,
+  "SF Pro Display",
+  "SF Pro Text",
+  sans-serif;
+  --font-mono: "SF Mono",
+  ui-monospace,
+  monospace;
 }
+
 :root[data-os="android"] {
-  --font-sans: "Google Sans", "Roboto", sans-serif;
-  --font-serif: "Google Sans", "Roboto", sans-serif;
-  --font-mono: "Roboto Mono", ui-monospace, monospace;
+  --font-sans: "Geist", "Google Sans", "Roboto", sans-serif;
+  --font-serif: "Geist", "Google Sans", "Roboto", sans-serif;
+  --font-mono: "Geist Mono", "Roboto Mono", ui-monospace, monospace;
 }
+
 :root[data-os="windows"] {
-  --font-sans: "Segoe UI", "Segoe UI Variable", sans-serif;
-  --font-serif: "Segoe UI", "Segoe UI Variable", sans-serif;
-  --font-mono: "Cascadia Code", "Consolas", monospace;
+  --font-sans: "Geist", "Segoe UI", "Segoe UI Variable", sans-serif;
+  --font-serif: "Geist", "Segoe UI", "Segoe UI Variable", sans-serif;
+  --font-mono: "Geist Mono", "Cascadia Code", "Consolas", monospace;
 }
+
 :root[data-os="linux"] {
-  --font-sans: "Comic Sans MS", "Comic Sans", cursive;
-  --font-serif: "Comic Sans MS", "Comic Sans", cursive;
-  --font-mono: "Comic Sans MS", "Comic Sans", cursive;
+  --font-sans: "Geist", sans-serif;
+  --font-serif: "Geist", serif;
+  --font-mono: "Geist Mono", monospace;
 }
 
 :root {
