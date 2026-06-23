@@ -10,17 +10,26 @@ interface GridViewProps {
   onSelect: (work: PortfolioWork) => void;
 }
 
-/** Shared CSS grid classes — must be identical for layout continuity. */
+/**
+ * Grid classes applied to each independent grid container.
+ * All three containers use the same classes so they produce identical layouts.
+ */
 const GRID_CLASSES =
-  "grid grid-flow-dense auto-rows-[122px] grid-cols-3 gap-3 md:auto-rows-[150px] md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 px-4 md:px-8";
+  "grid grid-flow-dense auto-rows-[122px] grid-cols-3 gap-3 md:auto-rows-[150px] md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10";
 
 /**
  * The main grid view with an infinite vertical drift animation.
- * Renders three consecutive iterations of the image pool in a single
- * continuous grid flow to eliminate any layout gaps or seams.
  *
- * Users can scroll up/down to temporarily speed up, slow down, or reverse
- * the drift. The speed decays back to normal after a moment.
+ * Renders three **separate, independent** grid containers — each containing
+ * the same pool of items with the same spans. Because each container is its
+ * own CSS Grid context, grid-flow-dense produces an identical layout in each
+ * one. This guarantees that wrapping by one container's height is visually
+ * seamless (no snap/jump).
+ *
+ * The flex gap between containers matches the internal grid row gap (gap-3)
+ * so the transition between grids looks like any other row boundary.
+ *
+ * Users can scroll up/down to speed up, slow down, or reverse the drift.
  */
 export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
   const [hovered, setHovered] = useState<string | null>(null);
@@ -38,7 +47,7 @@ export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
 
     scrollTimeoutRef.current = setTimeout(() => {
       isScrollingRef.current = false;
-    }, 450); // Cooldown to allow scroll movement to settle before re-enabling hovers
+    }, 450);
   }, []);
 
   useEffect(() => {
@@ -59,14 +68,15 @@ export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
   // Pause the drift when a tile is hovered.
   const effectivePaused = isPaused || hovered !== null;
 
-  const driftRef = useDriftSpeed(effectivePaused, imagePool.length, handleScroll);
+  const driftRef = useDriftSpeed(effectivePaused, handleScroll);
 
-  // Generate 3 iterations of the pool with distinct suffixes.
-  const extendedPool = useMemo(() => {
-    const iter0 = imagePool.map((w) => ({ ...w, id: `${w.id}__i0` }));
-    const iter1 = imagePool.map((w) => ({ ...w, id: `${w.id}__i1` }));
-    const iter2 = imagePool.map((w) => ({ ...w, id: `${w.id}__i2` }));
-    return [...iter0, ...iter1, ...iter2];
+  // Three copies with distinct IDs so React keys and framer layoutIds
+  // don't collide. Each copy is rendered in its own grid container.
+  const [pool0, pool1, pool2] = useMemo(() => {
+    const p0 = imagePool.map((w) => ({ ...w, id: `${w.id}__i0` }));
+    const p1 = imagePool.map((w) => ({ ...w, id: `${w.id}__i1` }));
+    const p2 = imagePool.map((w) => ({ ...w, id: `${w.id}__i2` }));
+    return [p0, p1, p2] as const;
   }, [imagePool]);
 
   const renderTiles = (pool: PortfolioWork[]) =>
@@ -95,14 +105,22 @@ export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28 bg-gradient-to-t from-black to-transparent" />
         <div
           ref={driftRef}
-          data-grid
-          className={GRID_CLASSES}
+          className="flex flex-col gap-3 px-4 md:px-8"
           style={{
             willChange: "transform",
             transform: "translateY(0) translateZ(0)",
           }}
         >
-          {renderTiles(extendedPool)}
+          {/* Three independent grid containers — identical layouts */}
+          <div data-grid className={GRID_CLASSES}>
+            {renderTiles(pool0)}
+          </div>
+          <div className={GRID_CLASSES} aria-hidden="true">
+            {renderTiles(pool1)}
+          </div>
+          <div className={GRID_CLASSES} aria-hidden="true">
+            {renderTiles(pool2)}
+          </div>
         </div>
       </div>
     </motion.section>
