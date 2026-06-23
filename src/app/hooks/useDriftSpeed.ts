@@ -4,11 +4,16 @@ import { useRef, useEffect, useCallback } from "react";
  * Drives the grid drift via requestAnimationFrame instead of a CSS animation,
  * so wheel events can temporarily speed up, slow down, or reverse the scroll.
  *
- * Returns a ref to attach to the drifting container and a wheel handler.
+ * Returns a ref to attach to the drifting container (which must contain
+ * exactly two child elements — two identical grid copies stacked vertically).
  *
  * The drift moves upward at BASE_SPEED px/s. Scrolling down speeds it up,
  * scrolling up slows it down (and can reverse it). The boost decays
  * exponentially back to the base speed over ~1-2 seconds.
+ *
+ * The wrap period is measured as the distance from the top of the first child
+ * to the top of the second child — this gives pixel-perfect seamless looping
+ * regardless of padding, margins, or gaps.
  */
 
 /** Base drift speed in pixels per second (upward). */
@@ -28,12 +33,23 @@ export function useDriftSpeed(isPaused: boolean) {
 
   // Mutable state kept in a ref so the rAF loop never re-creates.
   const state = useRef({
-    offset: 0,        // current translateY offset (px, grows negative = upward)
-    boost: 0,         // extra speed from wheel interaction (px/s, positive = faster upward)
-    lastTime: 0,      // previous frame timestamp
-    rafId: 0,         // requestAnimationFrame handle
-    height: 0,        // content height / 2 (the wrap point)
+    offset: 0, // current translateY offset (px, grows negative = upward)
+    boost: 0, // extra speed from wheel interaction (px/s, positive = faster upward)
+    lastTime: 0, // previous frame timestamp
+    rafId: 0, // requestAnimationFrame handle
+    height: 0, // wrap period: offset distance between the two grid copies
   });
+
+  // ── Height measurement ────────────────────────────────────────────
+  // Measures the distance from the top of child[0] to the top of child[1].
+  // This is the exact wrap period needed for seamless looping.
+  const measure = useCallback(() => {
+    const el = containerRef.current;
+    if (!el || el.children.length < 2) return;
+    const first = el.children[0] as HTMLElement;
+    const second = el.children[1] as HTMLElement;
+    state.current.height = second.offsetTop - first.offsetTop;
+  }, []);
 
   // ── Animation loop ──────────────────────────────────────────────────
   const tick = useCallback(
@@ -56,14 +72,10 @@ export function useDriftSpeed(isPaused: boolean) {
         const speed = BASE_SPEED + s.boost;
         s.offset -= speed * dt;
 
-        // Wrap seamlessly: the grid content is duplicated so -50% loops.
+        // Wrap seamlessly: keep offset in [-height, 0].
         if (s.height > 0) {
-          // Wrap around when we've scrolled past half the content
-          if (s.offset <= -s.height) {
-            s.offset += s.height;
-          } else if (s.offset > 0) {
-            s.offset -= s.height;
-          }
+          while (s.offset <= -s.height) s.offset += s.height;
+          while (s.offset > 0) s.offset -= s.height;
         }
 
         // Apply transform directly for performance.
@@ -82,29 +94,24 @@ export function useDriftSpeed(isPaused: boolean) {
   useEffect(() => {
     const s = state.current;
     s.lastTime = 0;
+    measure();
     s.rafId = requestAnimationFrame(tick);
-
-    // Measure content height (the grid renders its items twice for the loop).
-    const el = containerRef.current;
-    if (el) {
-      // scrollHeight is the full duplicated content; half of it is the wrap point.
-      s.height = el.scrollHeight / 2;
-    }
-
     return () => cancelAnimationFrame(s.rafId);
-  }, [tick]);
+  }, [tick, measure]);
 
-  // Re-measure height when children change (images load, pool changes).
+  // Re-measure when children resize (images load, viewport changes, etc.).
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
-    const ro = new ResizeObserver(() => {
-      state.current.height = el.scrollHeight / 2;
-    });
+    const ro = new ResizeObserver(() => measure());
     ro.observe(el);
+    // Also observe individual grid copies so layout shifts are caught.
+    for (const child of Array.from(el.children)) {
+      ro.observe(child);
+    }
     return () => ro.disconnect();
-  }, []);
+  }, [measure]);
 
   // ── Wheel handler ───────────────────────────────────────────────────
   const onWheel = useCallback((e: WheelEvent) => {

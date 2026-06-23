@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { GridTile } from "./GridTile";
 import { useDriftSpeed } from "../hooks/useDriftSpeed";
@@ -10,9 +10,14 @@ interface GridViewProps {
   onSelect: (work: PortfolioWork) => void;
 }
 
+/** Shared CSS grid classes — must be identical for both copies. */
+const GRID_CLASSES =
+  "grid grid-flow-dense auto-rows-[122px] grid-cols-3 gap-3 md:auto-rows-[150px] md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10";
+
 /**
  * The main grid view with an infinite vertical drift animation.
- * Contains the dense CSS grid of tiles with a bottom fade gradient.
+ * Renders two identical copies of the tile grid so that the drift
+ * wraps seamlessly — one copy is always on-screen as the other scrolls off.
  *
  * Users can scroll up/down to temporarily speed up, slow down, or reverse
  * the drift. The speed decays back to normal after a moment.
@@ -26,6 +31,26 @@ export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
   const driftRef = useDriftSpeed(effectivePaused);
 
   const handleUnhover = useCallback(() => setHovered(null), []);
+
+  // Second copy with distinct IDs so React keys and framer layoutIds
+  // don't collide with the primary copy.
+  const duplicatePool = useMemo(
+    () => imagePool.map((w) => ({ ...w, id: `${w.id}__dup` })),
+    [imagePool],
+  );
+
+  const renderTiles = (pool: PortfolioWork[]) =>
+    pool.map((work) => (
+      <GridTile
+        key={work.id}
+        work={work}
+        isHovered={hovered === work.id}
+        isDimmed={hovered !== null && hovered !== work.id}
+        onHover={setHovered}
+        onUnhover={handleUnhover}
+        onSelect={onSelect}
+      />
+    ));
 
   return (
     <motion.section
@@ -46,21 +71,13 @@ export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
             transform: "translateY(0) translateZ(0)",
           }}
         >
-          <div
-            data-grid
-            className="grid grid-flow-dense auto-rows-[122px] grid-cols-3 gap-3 pt-4 md:auto-rows-[150px] md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10"
-          >
-            {imagePool.map((work) => (
-              <GridTile
-                key={work.id}
-                work={work}
-                isHovered={hovered === work.id}
-                isDimmed={hovered !== null && hovered !== work.id}
-                onHover={setHovered}
-                onUnhover={handleUnhover}
-                onSelect={onSelect}
-              />
-            ))}
+          {/* Primary copy */}
+          <div data-grid className={GRID_CLASSES}>
+            {renderTiles(imagePool)}
+          </div>
+          {/* Seamless duplicate — mt-3 matches the internal row gap-3 */}
+          <div className={`${GRID_CLASSES} mt-3`} aria-hidden="true">
+            {renderTiles(duplicatePool)}
           </div>
         </div>
       </div>
