@@ -28,7 +28,7 @@ const DECAY_RATE = 3.0;
 /** Clamp boost so the drift can't get absurdly fast. */
 const MAX_BOOST = 600;
 
-export function useDriftSpeed(isPaused: boolean) {
+export function useDriftSpeed(isPaused: boolean, onScroll?: () => void) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Mutable state kept in a ref so the rAF loop never re-creates.
@@ -116,6 +116,7 @@ export function useDriftSpeed(isPaused: boolean) {
   // ── Wheel handler ───────────────────────────────────────────────────
   const onWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
+    if (e.deltaY === 0) return;
     const s = state.current;
     // deltaY > 0 = scroll down = speed up upward drift (positive boost).
     // deltaY < 0 = scroll up   = slow down / reverse (negative boost).
@@ -123,7 +124,10 @@ export function useDriftSpeed(isPaused: boolean) {
       -MAX_BOOST,
       Math.min(MAX_BOOST, s.boost + e.deltaY * WHEEL_GAIN),
     );
-  }, []);
+    if (onScroll) {
+      onScroll();
+    }
+  }, [onScroll]);
 
   // Attach the wheel listener (must be non-passive to preventDefault).
   useEffect(() => {

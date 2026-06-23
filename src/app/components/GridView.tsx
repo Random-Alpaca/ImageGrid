@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { GridTile } from "./GridTile";
 import { useDriftSpeed } from "../hooks/useDriftSpeed";
@@ -24,13 +24,42 @@ const GRID_CLASSES =
  */
 export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
   const [hovered, setHovered] = useState<string | null>(null);
+  const scrollTimeoutRef = useRef<any>(null);
+  const isScrollingRef = useRef(false);
+
+  // Exit hover/dimmed state when scrolling and prevent immediate re-hovering.
+  const handleScroll = useCallback(() => {
+    setHovered(null);
+    isScrollingRef.current = true;
+
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    scrollTimeoutRef.current = setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 450); // Cooldown to allow scroll movement to settle before re-enabling hovers
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleHover = useCallback((id: string) => {
+    if (isScrollingRef.current) return;
+    setHovered(id);
+  }, []);
+
+  const handleUnhover = useCallback(() => setHovered(null), []);
 
   // Pause the drift when a tile is hovered.
   const effectivePaused = isPaused || hovered !== null;
 
-  const driftRef = useDriftSpeed(effectivePaused);
-
-  const handleUnhover = useCallback(() => setHovered(null), []);
+  const driftRef = useDriftSpeed(effectivePaused, handleScroll);
 
   // Second copy with distinct IDs so React keys and framer layoutIds
   // don't collide with the primary copy.
@@ -46,7 +75,7 @@ export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
         work={work}
         isHovered={hovered === work.id}
         isDimmed={hovered !== null && hovered !== work.id}
-        onHover={setHovered}
+        onHover={handleHover}
         onUnhover={handleUnhover}
         onSelect={onSelect}
       />
