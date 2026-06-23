@@ -1,15 +1,5 @@
 /* ── Gallery-specific styles ─────────────────────────────────────────── */
 
-/* Infinite vertical drift for the grid background */
-@keyframes drift {
-  from { transform: translateY(0); }
-  to   { transform: translateY(-50%); }
-}
-
-.drift-animation {
-  animation: drift 120s linear infinite;
-}
-
 /* Glass surface — used for modal aside, list item info panes, etc. */
 .glass-pane {
   position: relative;

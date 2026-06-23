@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { motion } from "motion/react";
 import { GridTile } from "./GridTile";
+import { useDriftSpeed } from "../hooks/useDriftSpeed";
 import type { PortfolioWork } from "../types";
 
 interface GridViewProps {
@@ -12,12 +13,17 @@ interface GridViewProps {
 /**
  * The main grid view with an infinite vertical drift animation.
  * Contains the dense CSS grid of tiles with a bottom fade gradient.
+ *
+ * Users can scroll up/down to temporarily speed up, slow down, or reverse
+ * the drift. The speed decays back to normal after a moment.
  */
 export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
   const [hovered, setHovered] = useState<string | null>(null);
 
   // Pause the drift when a tile is hovered.
   const effectivePaused = isPaused || hovered !== null;
+
+  const driftRef = useDriftSpeed(effectivePaused);
 
   const handleUnhover = useCallback(() => setHovered(null), []);
 
@@ -33,11 +39,11 @@ export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
       <div className="relative flex-1 overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28 bg-gradient-to-t from-black to-transparent" />
         <div
-          className="drift-animation px-4 md:px-8"
+          ref={driftRef}
+          className="px-4 md:px-8"
           style={{
             willChange: "transform",
-            transform: "translateZ(0)",
-            animationPlayState: effectivePaused ? "paused" : "running",
+            transform: "translateY(0) translateZ(0)",
           }}
         >
           <div
