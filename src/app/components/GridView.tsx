@@ -10,14 +10,14 @@ interface GridViewProps {
   onSelect: (work: PortfolioWork) => void;
 }
 
-/** Shared CSS grid classes — must be identical for both copies. */
+/** Shared CSS grid classes — must be identical for layout continuity. */
 const GRID_CLASSES =
-  "grid grid-flow-dense auto-rows-[122px] grid-cols-3 gap-3 md:auto-rows-[150px] md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10";
+  "grid grid-flow-dense auto-rows-[122px] grid-cols-3 gap-3 md:auto-rows-[150px] md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 px-4 md:px-8";
 
 /**
  * The main grid view with an infinite vertical drift animation.
- * Renders two identical copies of the tile grid so that the drift
- * wraps seamlessly — one copy is always on-screen as the other scrolls off.
+ * Renders three consecutive iterations of the image pool in a single
+ * continuous grid flow to eliminate any layout gaps or seams.
  *
  * Users can scroll up/down to temporarily speed up, slow down, or reverse
  * the drift. The speed decays back to normal after a moment.
@@ -59,14 +59,15 @@ export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
   // Pause the drift when a tile is hovered.
   const effectivePaused = isPaused || hovered !== null;
 
-  const driftRef = useDriftSpeed(effectivePaused, handleScroll);
+  const driftRef = useDriftSpeed(effectivePaused, imagePool.length, handleScroll);
 
-  // Second copy with distinct IDs so React keys and framer layoutIds
-  // don't collide with the primary copy.
-  const duplicatePool = useMemo(
-    () => imagePool.map((w) => ({ ...w, id: `${w.id}__dup` })),
-    [imagePool],
-  );
+  // Generate 3 iterations of the pool with distinct suffixes.
+  const extendedPool = useMemo(() => {
+    const iter0 = imagePool.map((w) => ({ ...w, id: `${w.id}__i0` }));
+    const iter1 = imagePool.map((w) => ({ ...w, id: `${w.id}__i1` }));
+    const iter2 = imagePool.map((w) => ({ ...w, id: `${w.id}__i2` }));
+    return [...iter0, ...iter1, ...iter2];
+  }, [imagePool]);
 
   const renderTiles = (pool: PortfolioWork[]) =>
     pool.map((work) => (
@@ -94,20 +95,14 @@ export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28 bg-gradient-to-t from-black to-transparent" />
         <div
           ref={driftRef}
-          className="px-4 md:px-8"
+          data-grid
+          className={GRID_CLASSES}
           style={{
             willChange: "transform",
             transform: "translateY(0) translateZ(0)",
           }}
         >
-          {/* Primary copy */}
-          <div data-grid className={GRID_CLASSES}>
-            {renderTiles(imagePool)}
-          </div>
-          {/* Seamless duplicate — mt-3 matches the internal row gap-3 */}
-          <div className={`${GRID_CLASSES} mt-3`} aria-hidden="true">
-            {renderTiles(duplicatePool)}
-          </div>
+          {renderTiles(extendedPool)}
         </div>
       </div>
     </motion.section>

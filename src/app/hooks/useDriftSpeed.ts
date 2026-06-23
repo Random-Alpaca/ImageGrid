@@ -4,16 +4,16 @@ import { useRef, useEffect, useCallback } from "react";
  * Drives the grid drift via requestAnimationFrame instead of a CSS animation,
  * so wheel events can temporarily speed up, slow down, or reverse the scroll.
  *
- * Returns a ref to attach to the drifting container (which must contain
- * exactly two child elements — two identical grid copies stacked vertically).
+ * Returns a ref to attach to the drifting container (which must be a single
+ * CSS grid containing exactly three consecutive copies of the image pool).
  *
  * The drift moves upward at BASE_SPEED px/s. Scrolling down speeds it up,
  * scrolling up slows it down (and can reverse it). The boost decays
  * exponentially back to the base speed over ~1-2 seconds.
  *
- * The wrap period is measured as the distance from the top of the first child
- * to the top of the second child — this gives pixel-perfect seamless looping
- * regardless of padding, margins, or gaps.
+ * The wrap period is measured as the distance from the top of the middle copy
+ * to the top of the last copy. This gives pixel-perfect seamless looping
+ * without any layout seams or gaps.
  */
 
 /** Base drift speed in pixels per second (upward). */
@@ -25,10 +25,11 @@ const WHEEL_GAIN = 1.8;
 /** Exponential decay factor per second — higher = faster return to base. */
 const DECAY_RATE = 3.0;
 
-/** Clamp boost so the drift can't get absurdly fast. */
-const MAX_BOOST = 600;
-
-export function useDriftSpeed(isPaused: boolean, onScroll?: () => void) {
+export function useDriftSpeed(
+  isPaused: boolean,
+  poolSize: number,
+  onScroll?: () => void,
+) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Mutable state kept in a ref so the rAF loop never re-creates.
@@ -37,19 +38,24 @@ export function useDriftSpeed(isPaused: boolean, onScroll?: () => void) {
     boost: 0, // extra speed from wheel interaction (px/s, positive = faster upward)
     lastTime: 0, // previous frame timestamp
     rafId: 0, // requestAnimationFrame handle
-    height: 0, // wrap period: offset distance between the two grid copies
+    height: 0, // wrap period: vertical size of one full image pool iteration
+    center: 0, // offset of the middle iteration's start
   });
 
-  // ── Height measurement ────────────────────────────────────────────
-  // Measures the distance from the top of child[0] to the top of child[1].
-  // This is the exact wrap period needed for seamless looping.
+  // ── Height/Center measurement ──────────────────────────────────────
+  // Finds the first elements of the 1st, 2nd and 3rd iterations inside the
+  // single grid container, and measures the layout height of one iteration.
   const measure = useCallback(() => {
     const el = containerRef.current;
-    if (!el || el.children.length < 2) return;
+    if (!el || el.children.length < 3 * poolSize) return;
+
     const first = el.children[0] as HTMLElement;
-    const second = el.children[1] as HTMLElement;
-    state.current.height = second.offsetTop - first.offsetTop;
-  }, []);
+    const middle = el.children[poolSize] as HTMLElement;
+    const last = el.children[2 * poolSize] as HTMLElement;
+
+    state.current.height = last.offsetTop - middle.offsetTop;
+    state.current.center = middle.offsetTop;
+  }, [poolSize]);
 
   // ── Animation loop ──────────────────────────────────────────────────
   const tick = useCallback(
@@ -72,10 +78,12 @@ export function useDriftSpeed(isPaused: boolean, onScroll?: () => void) {
         const speed = BASE_SPEED + s.boost;
         s.offset -= speed * dt;
 
-        // Wrap seamlessly: keep offset in [-height, 0].
+        // Wrap seamlessly: keep offset in [-(center + height), -center].
         if (s.height > 0) {
-          while (s.offset <= -s.height) s.offset += s.height;
-          while (s.offset > 0) s.offset -= s.height;
+          const minOffset = -(s.center + s.height);
+          const maxOffset = -s.center;
+          while (s.offset < minOffset) s.offset += s.height;
+          while (s.offset > maxOffset) s.offset -= s.height;
         }
 
         // Apply transform directly for performance.
@@ -95,6 +103,12 @@ export function useDriftSpeed(isPaused: boolean, onScroll?: () => void) {
     const s = state.current;
     s.lastTime = 0;
     measure();
+
+    // Initialize offset to the start of the middle iteration.
+    if (s.offset === 0 && s.center > 0) {
+      s.offset = -s.center;
+    }
+
     s.rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(s.rafId);
   }, [tick, measure]);
@@ -104,9 +118,10 @@ export function useDriftSpeed(isPaused: boolean, onScroll?: () => void) {
     const el = containerRef.current;
     if (!el) return;
 
-    const ro = new ResizeObserver(() => measure());
+    const ro = new ResizeObserver(() => {
+      measure();
+    });
     ro.observe(el);
-    // Also observe individual grid copies so layout shifts are caught.
     for (const child of Array.from(el.children)) {
       ro.observe(child);
     }
@@ -114,20 +129,21 @@ export function useDriftSpeed(isPaused: boolean, onScroll?: () => void) {
   }, [measure]);
 
   // ── Wheel handler ───────────────────────────────────────────────────
-  const onWheel = useCallback((e: WheelEvent) => {
-    e.preventDefault();
-    if (e.deltaY === 0) return;
-    const s = state.current;
-    // deltaY > 0 = scroll down = speed up upward drift (positive boost).
-    // deltaY < 0 = scroll up   = slow down / reverse (negative boost).
-    s.boost = Math.max(
-      -MAX_BOOST,
-      Math.min(MAX_BOOST, s.boost + e.deltaY * WHEEL_GAIN),
-    );
-    if (onScroll) {
-      onScroll();
-    }
-  }, [onScroll]);
+  const onWheel = useCallback(
+    (e: WheelEvent) => {
+      e.preventDefault();
+      if (e.deltaY === 0) return;
+      const s = state.current;
+
+      // Infinite speedup: no clamp on boost!
+      s.boost = s.boost + e.deltaY * WHEEL_GAIN;
+
+      if (onScroll) {
+        onScroll();
+      }
+    },
+    [onScroll],
+  );
 
   // Attach the wheel listener (must be non-passive to preventDefault).
   useEffect(() => {
