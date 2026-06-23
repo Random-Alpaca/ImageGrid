@@ -20,7 +20,7 @@ import { useRef, useEffect, useCallback } from "react";
 const BASE_SPEED = 40;
 
 /** How much each wheel delta pixel adds to the boost (px/s per px). */
-const WHEEL_GAIN = 1.8;
+const WHEEL_GAIN = 0.5;
 
 /** Exponential decay factor per second — higher = faster return to base. */
 const DECAY_RATE = 3.0;
