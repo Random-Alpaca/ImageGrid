@@ -31,12 +31,6 @@ export function ListItem({ item, onClick }: ListItemProps) {
           >
             {item.title}
           </h3>
-          <p
-            className="mt-2 text-sm leading-6"
-            style={{ color: "var(--glass-text-muted)" }}
-          >
-            {item.caption}
-          </p>
         </div>
       </div>
     </button>
