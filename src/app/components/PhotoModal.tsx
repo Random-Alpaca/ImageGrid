@@ -31,19 +31,42 @@ export function PhotoModal({ selected, isClosing, exif, onClose }: PhotoModalPro
   const [overscrollProgress, setOverscrollProgress] = useState(0);
   const isOverscrollingRef = useRef(false);
   const accumulatedOverscrollRef = useRef(0);
+  const overscrollProgressRef = useRef(0);
+  const wheelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const updateProgress = useCallback((val: number) => {
+    overscrollProgressRef.current = val;
+    setOverscrollProgress(val);
+  }, []);
 
   // Reset overscroll state when modal opens/closes.
   useEffect(() => {
-    setOverscrollProgress(0);
+    updateProgress(0);
     accumulatedOverscrollRef.current = 0;
     isOverscrollingRef.current = false;
-  }, [selected]);
+    if (wheelTimeoutRef.current) {
+      clearTimeout(wheelTimeoutRef.current);
+    }
+  }, [selected, updateProgress]);
+
+  // Clean up timeout on unmount.
+  useEffect(() => {
+    return () => {
+      if (wheelTimeoutRef.current) {
+        clearTimeout(wheelTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Handle scroll events on the panel to detect overscroll at bottom.
   const handlePanelWheel = useCallback(
     (e: WheelEvent) => {
       const el = panelScrollRef.current;
       if (!el) return;
+
+      if (wheelTimeoutRef.current) {
+        clearTimeout(wheelTimeoutRef.current);
+      }
 
       const atBottom =
         el.scrollHeight - el.scrollTop - el.clientHeight < 1;
@@ -56,38 +79,32 @@ export function PhotoModal({ selected, isClosing, exif, onClose }: PhotoModalPro
           accumulatedOverscrollRef.current / OVERSCROLL_THRESHOLD,
           1,
         );
-        setOverscrollProgress(progress);
+        updateProgress(progress);
         isOverscrollingRef.current = true;
-
-        if (progress >= 1) {
-          onClose();
-        }
-      } else if (isOverscrollingRef.current && e.deltaY < 0) {
-        // Scrolling back up from overscroll — reduce progress.
-        e.preventDefault();
-        accumulatedOverscrollRef.current = Math.max(
-          0,
-          accumulatedOverscrollRef.current + e.deltaY,
-        );
-        const progress = Math.min(
-          accumulatedOverscrollRef.current / OVERSCROLL_THRESHOLD,
-          1,
-        );
-        setOverscrollProgress(progress);
-
-        if (accumulatedOverscrollRef.current <= 0) {
-          isOverscrollingRef.current = false;
-        }
+      } else if (e.deltaY < 0) {
+        // Scrolling back up — reset progress immediately.
+        updateProgress(0);
+        accumulatedOverscrollRef.current = 0;
+        isOverscrollingRef.current = false;
       } else {
         // Normal scrolling — reset any accumulated overscroll.
+        updateProgress(0);
         accumulatedOverscrollRef.current = 0;
-        if (isOverscrollingRef.current) {
-          setOverscrollProgress(0);
+        isOverscrollingRef.current = false;
+      }
+
+      // Set the release timeout
+      wheelTimeoutRef.current = setTimeout(() => {
+        if (overscrollProgressRef.current >= 1) {
+          onClose();
+        } else {
+          updateProgress(0);
+          accumulatedOverscrollRef.current = 0;
           isOverscrollingRef.current = false;
         }
-      }
+      }, 150);
     },
-    [onClose],
+    [onClose, updateProgress],
   );
 
   // Attach the wheel listener (must be non-passive to preventDefault).
@@ -121,19 +138,30 @@ export function PhotoModal({ selected, isClosing, exif, onClose }: PhotoModalPro
           accumulatedOverscrollRef.current / OVERSCROLL_THRESHOLD,
           1,
         );
-        setOverscrollProgress(progress);
+        updateProgress(progress);
         isOverscrollingRef.current = true;
-
-        if (progress >= 1) {
-          onClose();
-        }
+      } else if (deltaY < 0) {
+        // Scrolling up - reset
+        updateProgress(0);
+        accumulatedOverscrollRef.current = 0;
+        isOverscrollingRef.current = false;
       } else if (!isOverscrollingRef.current) {
         accumulatedOverscrollRef.current = 0;
-        setOverscrollProgress(0);
+        updateProgress(0);
       }
     },
-    [onClose],
+    [updateProgress],
   );
+
+  const handleTouchEnd = useCallback(() => {
+    if (overscrollProgressRef.current >= 1) {
+      onClose();
+    } else {
+      updateProgress(0);
+      accumulatedOverscrollRef.current = 0;
+      isOverscrollingRef.current = false;
+    }
+  }, [onClose, updateProgress]);
 
   return (
     <AnimatePresence>
@@ -153,7 +181,7 @@ export function PhotoModal({ selected, isClosing, exif, onClose }: PhotoModalPro
           <div className="flex h-full w-full flex-col md:flex-row md:items-center md:justify-center md:gap-8 md:p-4">
             {/* ── Image ─────────────────────────────────────── */}
             <motion.figure
-              className="relative mx-auto max-h-[40vh] w-full shrink-0 overflow-hidden bg-black shadow-2xl shadow-black/70 md:mx-0 md:ml-auto md:max-h-[84vh] md:max-w-[calc(100%-390px-2rem)] md:w-auto"
+              className="relative mx-auto max-h-[40vh] w-full shrink-0 overflow-hidden bg-black shadow-2xl shadow-black/70 md:mx-0 md:max-h-[84vh] md:max-w-[calc(100%-390px-4rem)] md:w-auto"
               layout
               transition={modalTransition}
               onClick={(e) => e.stopPropagation()}
@@ -208,6 +236,8 @@ export function PhotoModal({ selected, isClosing, exif, onClose }: PhotoModalPro
                     className="glass-pane flex-1 overflow-y-auto overscroll-contain p-6 md:p-7"
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                    onTouchCancel={handleTouchEnd}
                   >
                     <button
                       onClick={onClose}
