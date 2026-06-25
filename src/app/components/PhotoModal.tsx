@@ -34,6 +34,17 @@ export function PhotoModal({ selected, isClosing, exif, onClose }: PhotoModalPro
   const overscrollProgressRef = useRef(0);
   const wheelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches,
+  );
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const listener = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, []);
+
   const updateProgress = useCallback((val: number) => {
     overscrollProgressRef.current = val;
     setOverscrollProgress(val);
@@ -163,11 +174,16 @@ export function PhotoModal({ selected, isClosing, exif, onClose }: PhotoModalPro
     }
   }, [onClose, updateProgress]);
 
+  const backdropBg = isDesktop
+    ? `rgba(0,0,0, ${(1 - overscrollProgress) * 0.55})`
+    : "rgba(0,0,0,0)";
+
   return (
     <AnimatePresence>
       {selected && (
         <motion.div
-          className="fixed inset-0 z-40 bg-black/0 md:bg-[rgba(0,0,0,0.55)] backdrop-blur-md"
+          className="fixed inset-0 z-40 backdrop-blur-md"
+          style={{ backgroundColor: backdropBg }}
           onClick={onClose}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
