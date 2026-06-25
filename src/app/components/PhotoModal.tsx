@@ -167,7 +167,7 @@ export function PhotoModal({ selected, isClosing, exif, onClose }: PhotoModalPro
     <AnimatePresence>
       {selected && (
         <motion.div
-          className="fixed inset-0 z-40 bg-[rgba(0,0,0,0.55)] backdrop-blur-md"
+          className="fixed inset-0 z-40 bg-black/0 md:bg-[rgba(0,0,0,0.55)] backdrop-blur-md"
           onClick={onClose}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -178,10 +178,10 @@ export function PhotoModal({ selected, isClosing, exif, onClose }: PhotoModalPro
            * Desktop: side-by-side image + scrollable panel.
            * Mobile: vertical stack — image on top, scrollable panel below.
            */}
-          <div className="flex h-full w-full flex-col md:flex-row md:items-center md:justify-center md:gap-8 md:p-4">
+          <div className="flex h-full w-full flex-col items-center justify-start py-[3vh] px-[5vw] gap-[3vh] md:flex-row md:items-center md:justify-center md:gap-8 md:p-4">
             {/* ── Image ─────────────────────────────────────── */}
             <motion.figure
-              className="relative mx-auto max-h-[40vh] w-full shrink-0 overflow-hidden bg-black shadow-2xl shadow-black/70 md:mx-0 md:max-h-[84vh] md:max-w-[calc(100%-390px-4rem)] md:w-auto"
+              className="relative mx-auto max-h-[38vh] w-full shrink-0 overflow-hidden bg-black shadow-2xl shadow-black/70 md:mx-0 md:max-h-[84vh] md:max-w-[calc(100%-390px-4rem)] md:w-auto"
               layout
               transition={modalTransition}
               onClick={(e) => e.stopPropagation()}
@@ -215,7 +215,7 @@ export function PhotoModal({ selected, isClosing, exif, onClose }: PhotoModalPro
             <AnimatePresence>
               {!isClosing && (
                 <motion.div
-                  className="relative flex min-h-0 flex-1 md:flex-initial md:h-[84vh] md:w-[390px] md:shrink-0"
+                  className="relative flex min-h-0 w-full flex-1 md:flex-initial md:h-[84vh] md:w-[390px] md:shrink-0"
                   initial={{ opacity: 0, x: 28, scale: 0.96 }}
                   animate={{
                     opacity: 1,
