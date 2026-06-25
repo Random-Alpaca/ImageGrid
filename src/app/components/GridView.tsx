@@ -10,24 +10,29 @@ interface GridViewProps {
   onSelect: (work: PortfolioWork) => void;
 }
 
-/** Shared CSS grid classes — must be identical for layout continuity. */
+/** Shared CSS grid classes. */
 const GRID_CLASSES =
   "grid grid-flow-dense auto-rows-[122px] grid-cols-3 gap-3 md:auto-rows-[150px] md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 px-4 md:px-8";
 
 /**
  * The main grid view with an infinite vertical drift animation.
- * Renders three consecutive iterations of the image pool in a single
- * continuous grid flow to eliminate any layout gaps or seams.
  *
- * Users can scroll up/down to temporarily speed up, slow down, or reverse
- * the drift. The speed decays back to normal after a moment.
+ * Renders three consecutive iterations of the image pool in a SINGLE
+ * continuous grid container.
+ *
+ * Because the `imagePool` is mathematically generated to have an exact total
+ * area (multiple of 120) and ends with plenty of 1x1 filler tiles,
+ * each iteration packs perfectly flat with NO ragged bottom.
+ *
+ * This means iteration 1 starts on a fresh row just like iteration 0,
+ * resulting in EXACTLY identical layouts for all three iterations,
+ * allowing for a seamless snap-free infinite loop!
  */
 export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
   const [hovered, setHovered] = useState<string | null>(null);
   const scrollTimeoutRef = useRef<any>(null);
   const isScrollingRef = useRef(false);
 
-  // Exit hover/dimmed state when scrolling and prevent immediate re-hovering.
   const handleScroll = useCallback(() => {
     setHovered(null);
     isScrollingRef.current = true;
@@ -38,7 +43,7 @@ export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
 
     scrollTimeoutRef.current = setTimeout(() => {
       isScrollingRef.current = false;
-    }, 450); // Cooldown to allow scroll movement to settle before re-enabling hovers
+    }, 450);
   }, []);
 
   useEffect(() => {
@@ -56,12 +61,11 @@ export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
 
   const handleUnhover = useCallback(() => setHovered(null), []);
 
-  // Pause the drift when a tile is hovered.
   const effectivePaused = isPaused || hovered !== null;
 
+  // Pass pool size to hook so it knows where the middle iteration starts
   const driftRef = useDriftSpeed(effectivePaused, imagePool.length, handleScroll);
 
-  // Generate 3 iterations of the pool with distinct suffixes.
   const extendedPool = useMemo(() => {
     const iter0 = imagePool.map((w) => ({ ...w, id: `${w.id}__i0` }));
     const iter1 = imagePool.map((w) => ({ ...w, id: `${w.id}__i1` }));
@@ -93,6 +97,7 @@ export function GridView({ imagePool, isPaused, onSelect }: GridViewProps) {
     >
       <div className="relative flex-1 overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-28 bg-gradient-to-t from-black to-transparent" />
+        {/* SINGLE continuous grid container */}
         <div
           ref={driftRef}
           data-grid

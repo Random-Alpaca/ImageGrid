@@ -1,21 +1,5 @@
 import { useRef, useEffect, useCallback } from "react";
 
-/**
- * Drives the grid drift via requestAnimationFrame instead of a CSS animation,
- * so wheel events can temporarily speed up, slow down, or reverse the scroll.
- *
- * Returns a ref to attach to the drifting container (which must be a single
- * CSS grid containing exactly three consecutive copies of the image pool).
- *
- * The drift moves upward at BASE_SPEED px/s. Scrolling down speeds it up,
- * scrolling up slows it down (and can reverse it). The boost decays
- * exponentially back to the base speed over ~1-2 seconds.
- *
- * The wrap period is measured as the distance from the top of the middle copy
- * to the top of the last copy. This gives pixel-perfect seamless looping
- * without any layout seams or gaps.
- */
-
 /** Base drift speed in pixels per second (upward). */
 const BASE_SPEED = 40;
 
@@ -45,6 +29,9 @@ export function useDriftSpeed(
   // ── Height/Center measurement ──────────────────────────────────────
   // Finds the first elements of the 1st, 2nd and 3rd iterations inside the
   // single grid container, and measures the layout height of one iteration.
+  // This measurement is now perfectly accurate because `imagePool.ts`
+  // mathematically guarantees that each iteration packs perfectly flat with
+  // NO ragged bottoms, ensuring identical CSS Grid layouts for all iterations.
   const measure = useCallback(() => {
     const el = containerRef.current;
     if (!el || el.children.length < 3 * poolSize) return;
@@ -113,7 +100,7 @@ export function useDriftSpeed(
     return () => cancelAnimationFrame(s.rafId);
   }, [tick, measure]);
 
-  // Re-measure when children resize (images load, viewport changes, etc.).
+  // Re-measure when children resize.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -145,7 +132,6 @@ export function useDriftSpeed(
     [onScroll],
   );
 
-  // Attach the wheel listener (must be non-passive to preventDefault).
   useEffect(() => {
     const el = containerRef.current?.parentElement; // the overflow-hidden wrapper
     if (!el) return;
