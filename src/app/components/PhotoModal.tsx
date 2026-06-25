@@ -16,7 +16,7 @@ interface PhotoModalProps {
  * How many pixels of overscroll at the bottom before we fully fade in
  * the close icon and dismiss the modal.
  */
-const OVERSCROLL_THRESHOLD = 80;
+const OVERSCROLL_THRESHOLD = 180;
 
 /**
  * Full-screen photo modal with shared-element fly-in, blurred backdrop,
@@ -102,7 +102,7 @@ export function PhotoModal({ selected, isClosing, exif, onClose }: PhotoModalPro
           accumulatedOverscrollRef.current = 0;
           isOverscrollingRef.current = false;
         }
-      }, 150);
+      }, 400);
     },
     [onClose, updateProgress],
   );
